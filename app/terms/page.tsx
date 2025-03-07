@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.6 }
-  }
+    transition: { duration: 0.6 },
+  },
 };
 
 const staggerContainer = {
@@ -18,9 +18,9 @@ const staggerContainer = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2
-    }
-  }
+      staggerChildren: 0.2,
+    },
+  },
 };
 
 export default function TermsPage() {
@@ -30,34 +30,35 @@ export default function TermsPage() {
       <section className="relative">
         <div className="hero-gradient text-white">
           <div className="container-custom py-20">
-            <motion.div 
+            <motion.div
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
               className="max-w-3xl"
             >
-              <motion.h1 
-                variants={fadeIn}
-                className="heading-1 mb-6"
-              >
+              <motion.h1 variants={fadeIn} className="heading-1 mb-6">
                 Terms of Service
               </motion.h1>
-              <motion.p 
+              <motion.p
                 variants={fadeIn}
                 className="text-xl mb-8 text-white/90"
               >
-                The terms and conditions governing your use of our website and services.
+                The terms and conditions governing your use of our website and
+                services.
               </motion.p>
             </motion.div>
           </div>
         </div>
-        
+
         {/* Decorative elements */}
-        <div className="absolute bottom-0 left-0 w-full h-16 bg-background" style={{ clipPath: "polygon(0 100%, 100% 0, 100% 100%)" }}></div>
+        <div
+          className="absolute bottom-0 left-0 w-full h-16 bg-background"
+          style={{ clipPath: 'polygon(0 100%, 100% 0, 100% 100%)' }}
+        ></div>
       </section>
 
       {/* Terms of Service Content */}
-      <section className="section-padding">
+      {/* <section className="section-padding"> 
         <div className="container-custom">
           <motion.div 
             initial="hidden"
@@ -111,3 +112,8 @@ export default function TermsPage() {
               </ol>
               <p>
                 If you provide any information that is untrue, inaccurate, not current, or incomplete, we have the right
+
+                */}
+    </div>
+  );
+}
