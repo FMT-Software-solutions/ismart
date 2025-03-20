@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { featureFlags } from '@/const/feature-flags';
 
 export default function Footer() {
   return (
@@ -57,54 +58,66 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/about"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/trainings"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Trainings
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/research"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Research
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/campaigns"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Campaigns
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/media"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Media
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Contact
-                </Link>
-              </li>
+              {featureFlags.about && (
+                <li>
+                  <Link
+                    href="/about"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    About Us
+                  </Link>
+                </li>
+              )}
+              {featureFlags.trainings && (
+                <li>
+                  <Link
+                    href="/trainings"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Trainings
+                  </Link>
+                </li>
+              )}
+              {featureFlags.research && (
+                <li>
+                  <Link
+                    href="/research"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Research
+                  </Link>
+                </li>
+              )}
+              {featureFlags.campaigns && (
+                <li>
+                  <Link
+                    href="/campaigns"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Campaigns
+                  </Link>
+                </li>
+              )}
+              {featureFlags.media && (
+                <li>
+                  <Link
+                    href="/media"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Media
+                  </Link>
+                </li>
+              )}
+              {featureFlags.contact && (
+                <li>
+                  <Link
+                    href="/contact"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Contact
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 

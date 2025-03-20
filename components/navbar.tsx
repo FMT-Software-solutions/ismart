@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/navigation-menu';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { featureFlags } from '@/const/feature-flags';
 
 const navLinks = [
   {
@@ -29,6 +30,7 @@ const navLinks = [
       { title: 'Our Team', href: '/about#team' },
       { title: 'Policy Positions', href: '/about#policy' },
     ],
+    visible: featureFlags.about,
   },
   {
     title: 'Campaigns & Advocacy',
@@ -38,6 +40,7 @@ const navLinks = [
       { title: 'Past Initiatives', href: '/campaigns#past' },
       { title: 'Get Involved', href: '/campaigns#involved' },
     ],
+    visible: featureFlags.campaigns,
   },
   {
     title: 'Trainings',
@@ -48,6 +51,7 @@ const navLinks = [
       // { title: 'Parenting & Family Life', href: '/trainings/family' },
       { title: 'Register for Training', href: '/trainings/register' },
     ],
+    visible: featureFlags.trainings,
   },
   {
     title: 'Research',
@@ -58,6 +62,7 @@ const navLinks = [
       { title: 'Family Life & Parenting', href: '/research/family' },
       { title: 'Publications', href: '/research/publications' },
     ],
+    visible: featureFlags.research,
   },
   {
     title: 'Media',
@@ -67,9 +72,10 @@ const navLinks = [
       { title: 'Picture Gallery', href: '/media/gallery' },
       { title: 'News', href: '/media/news' },
     ],
+    visible: featureFlags.media,
   },
-  { title: 'Donate', href: '/donate' },
-  { title: 'Contact', href: '/contact' },
+  { title: 'Donate', href: '/donate', visible: featureFlags.donate },
+  { title: 'Contact', href: '/contact', visible: featureFlags.contact },
 ];
 
 export default function Navbar() {
@@ -117,50 +123,54 @@ export default function Navbar() {
           <div className="hidden md:flex md:items-center md:space-x-4">
             <NavigationMenu>
               <NavigationMenuList>
-                {navLinks.map((link) =>
-                  link.submenu ? (
-                    <NavigationMenuItem key={link.title}>
-                      <NavigationMenuTrigger className="text-base">
-                        <Link href={link.href}>{link.title}</Link>
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                          {link.submenu.map((subItem) => (
-                            <li key={subItem.title}>
-                              <NavigationMenuLink asChild>
-                                <Link
-                                  href={subItem.href}
-                                  className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                >
-                                  <div className="text-sm font-medium leading-none">
-                                    {subItem.title}
-                                  </div>
-                                </Link>
-                              </NavigationMenuLink>
-                            </li>
-                          ))}
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  ) : (
-                    <NavigationMenuItem key={link.title}>
-                      <Link href={link.href} legacyBehavior passHref>
-                        <NavigationMenuLink
-                          className={navigationMenuTriggerStyle()}
-                        >
-                          {link.title}
-                        </NavigationMenuLink>
-                      </Link>
-                    </NavigationMenuItem>
-                  )
-                )}
+                {navLinks
+                  .filter((navLink) => navLink.visible)
+                  .map((link) =>
+                    link.submenu ? (
+                      <NavigationMenuItem key={link.title}>
+                        <NavigationMenuTrigger className="text-base">
+                          <Link href={link.href}>{link.title}</Link>
+                        </NavigationMenuTrigger>
+                        <NavigationMenuContent>
+                          <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                            {link.submenu.map((subItem) => (
+                              <li key={subItem.title}>
+                                <NavigationMenuLink asChild>
+                                  <Link
+                                    href={subItem.href}
+                                    className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                                  >
+                                    <div className="text-sm font-medium leading-none">
+                                      {subItem.title}
+                                    </div>
+                                  </Link>
+                                </NavigationMenuLink>
+                              </li>
+                            ))}
+                          </ul>
+                        </NavigationMenuContent>
+                      </NavigationMenuItem>
+                    ) : (
+                      <NavigationMenuItem key={link.title}>
+                        <Link href={link.href} legacyBehavior passHref>
+                          <NavigationMenuLink
+                            className={navigationMenuTriggerStyle()}
+                          >
+                            {link.title}
+                          </NavigationMenuLink>
+                        </Link>
+                      </NavigationMenuItem>
+                    )
+                  )}
               </NavigationMenuList>
             </NavigationMenu>
 
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="icon">
-                <Search className="h-4 w-4" />
-              </Button>
+              {featureFlags.search && (
+                <Button variant="outline" size="icon">
+                  <Search className="h-4 w-4" />
+                </Button>
+              )}
               <ModeToggle />
             </div>
           </div>
