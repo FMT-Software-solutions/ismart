@@ -45,7 +45,7 @@ const staggerContainer = {
 
 export default function CampaignsPage() {
   return (
-    <div>
+    (<div>
       {/* Hero Section */}
       <section className="relative">
         <div className="hero-gradient text-white">
@@ -77,7 +77,6 @@ export default function CampaignsPage() {
           style={{ clipPath: 'polygon(0 100%, 100% 0, 100% 100%)' }}
         ></div>
       </section>
-
       {/* Current Campaigns Section */}
       <section id="current" className="section-padding">
         <div className="container-custom">
@@ -253,7 +252,6 @@ export default function CampaignsPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Past Initiatives Section */}
       <section id="past" className="section-padding bg-muted/30">
         <div className="container-custom">
@@ -481,7 +479,6 @@ export default function CampaignsPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Get Involved Section */}
       <section id="involved" className="section-padding">
         <div className="container-custom">
@@ -561,7 +558,6 @@ export default function CampaignsPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Testimonials Section */}
       <section className="section-padding bg-muted/30">
         <div className="container-custom">
@@ -650,7 +646,6 @@ export default function CampaignsPage() {
           </motion.div>
         </div>
       </section>
-
       {/* CTA Section */}
       <section className="section-padding bg-primary text-primary-foreground">
         <div className="container-custom">
@@ -687,6 +682,6 @@ export default function CampaignsPage() {
           </motion.div>
         </div>
       </section>
-    </div>
+    </div>)
   );
 }

@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { featureFlags } from '@/const/feature-flags';
+import { usePathname } from 'next/navigation';
 
 const navLinks = [
   {
@@ -81,6 +82,7 @@ const navLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -114,6 +116,7 @@ export default function Navbar() {
                   alt="iSMART Logo"
                   width={100}
                   height={100}
+                  className={cn(pathname.includes('/admin') ? 'ml-10' : '')}
                 />
               </motion.div>
             </Link>
@@ -134,7 +137,7 @@ export default function Navbar() {
                         <NavigationMenuContent>
                           <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                             {link.submenu.map((subItem) => (
-                              <li key={subItem.title}>
+                              <li key={subItem.title} className="list-none">
                                 <NavigationMenuLink asChild>
                                   <Link
                                     href={subItem.href}
@@ -178,17 +181,19 @@ export default function Navbar() {
           {/* Mobile Navigation Toggle */}
           <div className="flex md:hidden items-center space-x-2">
             <ModeToggle />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              {isOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </Button>
+            {!pathname.includes('/admin') && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                {isOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </div>

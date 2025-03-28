@@ -1,4 +1,5 @@
-"use client";
+"use client";;
+import { use } from "react";
 
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -246,16 +247,17 @@ const projects = [
   }
 ];
 
-export default function ProjectPage({ params }: { params: { slug: string } }) {
+export default function ProjectPage(props: { params: Promise<{ slug: string }> }) {
+  const params = use(props.params);
   const project = projects.find(p => p.slug === params.slug);
-  
+
   if (!project) {
     notFound();
   }
-  
+
   // Determine the research area page link based on the project category
   const researchAreaLink = `/research/${project.category}`;
-  
+
   return (
     <div>
       {/* Hero Section */}

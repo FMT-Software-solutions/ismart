@@ -72,7 +72,7 @@ export function PolicyPositions() {
           <motion.div variants={fadeIn}>
             <h3 className="heading-3 mb-6">Key Policy Areas</h3>
             <ul className="space-y-4">
-              <li className="flex items-start">
+              <li className="flex items-start list-none">
                 <div className="mr-4 mt-1 bg-primary/10 p-2 rounded-full">
                   <Heart className="h-5 w-5 text-primary" />
                 </div>
@@ -87,7 +87,7 @@ export function PolicyPositions() {
                   </p>
                 </div>
               </li>
-              <li className="flex items-start">
+              <li className="flex items-start list-none">
                 <div className="mr-4 mt-1 bg-secondary/10 p-2 rounded-full">
                   <Users className="h-5 w-5 text-secondary" />
                 </div>
@@ -102,7 +102,7 @@ export function PolicyPositions() {
                   </p>
                 </div>
               </li>
-              <li className="flex items-start">
+              <li className="flex items-start list-none">
                 <div className="mr-4 mt-1 bg-accent/10 p-2 rounded-full">
                   <BookOpen className="h-5 w-5 text-accent" />
                 </div>

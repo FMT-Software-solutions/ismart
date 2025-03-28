@@ -36,7 +36,7 @@ const staggerContainer = {
 
 export default function ResearchPage() {
   return (
-    <div>
+    (<div>
       {/* Hero Section */}
       <section className="relative">
         <div className="hero-gradient text-white">
@@ -67,7 +67,6 @@ export default function ResearchPage() {
           style={{ clipPath: 'polygon(0 100%, 100% 0, 100% 100%)' }}
         ></div>
       </section>
-
       {/* Research Focus Areas Section */}
       <section className="section-padding">
         <div className="container-custom">
@@ -157,7 +156,6 @@ export default function ResearchPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Current Research Projects Section */}
       <section className="section-padding bg-muted/30">
         <div className="container-custom">
@@ -261,7 +259,6 @@ export default function ResearchPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Publications Section */}
       <section className="section-padding">
         <div className="container-custom">
@@ -467,7 +464,6 @@ export default function ResearchPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Research Team Section */}
       <section className="section-padding bg-muted/30">
         <div className="container-custom">
@@ -568,7 +564,6 @@ export default function ResearchPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Research Partnerships Section */}
       <section className="section-padding">
         <div className="container-custom">
@@ -618,7 +613,6 @@ export default function ResearchPage() {
           </motion.div>
         </div>
       </section>
-
       {/* CTA Section */}
       <section className="section-padding bg-primary text-primary-foreground">
         <div className="container-custom">
@@ -655,6 +649,6 @@ export default function ResearchPage() {
           </motion.div>
         </div>
       </section>
-    </div>
+    </div>)
   );
 }

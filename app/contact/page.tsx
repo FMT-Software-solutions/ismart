@@ -94,7 +94,6 @@ export default function ContactPage() {
       description:
         "Thank you for contacting us. We'll respond to your inquiry as soon as possible.",
     });
-    console.log('Contact form submitted:', data);
     form.reset();
   };
 

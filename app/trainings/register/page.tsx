@@ -153,8 +153,6 @@ export default function RegisterPage() {
         description:
           "Your training registration has been received. We'll contact you shortly with confirmation details.",
       });
-      console.log('Form submitted:', updatedData);
-      // In a real application, you would send this data to your backend
     }
   };
 

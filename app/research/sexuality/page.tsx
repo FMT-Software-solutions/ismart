@@ -29,7 +29,7 @@ const staggerContainer = {
 
 export default function SexualityResearchPage() {
   return (
-    <div>
+    (<div>
       {/* Hero Section */}
       <section className="relative">
         <div className="hero-gradient text-white">
@@ -59,7 +59,6 @@ export default function SexualityResearchPage() {
         {/* Decorative elements */}
         <div className="absolute bottom-0 left-0 w-full h-16 bg-background" style={{ clipPath: "polygon(0 100%, 100% 0, 100% 100%)" }}></div>
       </section>
-
       {/* Research Overview Section */}
       <section className="section-padding">
         <div className="container-custom">
@@ -120,7 +119,6 @@ export default function SexualityResearchPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Research Focus Areas Section */}
       <section className="section-padding bg-muted/30">
         <div className="container-custom">
@@ -297,7 +295,6 @@ export default function SexualityResearchPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Current Projects Section */}
       <section className="section-padding">
         <div className="container-custom">
@@ -379,7 +376,6 @@ export default function SexualityResearchPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Publications Section */}
       <section className="section-padding bg-muted/30">
         <div className="container-custom">
@@ -460,7 +456,6 @@ export default function SexualityResearchPage() {
           </motion.div>
         </div>
       </section>
-
       {/* Research Team Section */}
       <section className="section-padding">
         <div className="container-custom">
@@ -527,7 +522,6 @@ export default function SexualityResearchPage() {
           </motion.div>
         </div>
       </section>
-
       {/* CTA Section */}
       <section className="section-padding bg-primary text-primary-foreground">
         <div className="container-custom">
@@ -553,6 +547,6 @@ export default function SexualityResearchPage() {
           </motion.div>
         </div>
       </section>
-    </div>
+    </div>)
   );
 }
