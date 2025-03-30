@@ -14,13 +14,17 @@ import {
   DollarSign,
   CheckCircle,
   AlertTriangle,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useEventCreation } from '../context/EventCreationContext';
 import { EventFormValues } from '../../models/event-schema';
+import { useState } from 'react';
+import ImagePreviewModal from '../../components/ImagePreviewModal';
 
 export default function EventPreview() {
   const { form, richTextDescription } = useEventCreation();
   const formData = form.getValues();
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const formatDate = (date: Date | undefined | null, formatStr: string) => {
     if (!date) return 'Not set';
@@ -68,7 +72,24 @@ export default function EventPreview() {
       )}
 
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-0">
+          {formData.bannerImageUrl && (
+            <div
+              className="relative w-full h-48 md:h-64 -mx-6 -mt-6 mb-6 cursor-pointer overflow-hidden"
+              onClick={() => setPreviewImage(formData.bannerImageUrl)}
+            >
+              <img
+                src={formData.bannerImageUrl}
+                alt="Event banner"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    'https://placehold.co/600x400?text=Banner+preview';
+                  (e.target as HTMLImageElement).classList.add('opacity-50');
+                }}
+              />
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-2xl">
@@ -214,8 +235,47 @@ export default function EventPreview() {
               <p className="text-gray-500">No description provided</p>
             )}
           </div>
+
+          {/* Gallery Images */}
+          {formData.galleryImages && formData.galleryImages.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium flex items-center">
+                <ImageIcon className="h-5 w-5 mr-2" />
+                Gallery
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {formData.galleryImages.map((imageUrl, index) => (
+                  <div
+                    key={index}
+                    className="relative aspect-square rounded-md overflow-hidden cursor-pointer border bg-gray-50"
+                    onClick={() => setPreviewImage(imageUrl)}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`Gallery image ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          'https://placehold.co/600x400?text=Image+preview';
+                        (e.target as HTMLImageElement).classList.add(
+                          'opacity-50'
+                        );
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Image Preview Modal */}
+      <ImagePreviewModal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        imageUrl={previewImage || ''}
+      />
     </div>
   );
 }

@@ -123,10 +123,7 @@ export default function SubmissionsPage() {
             Review and manage registration submissions
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/admin/events/edit?id=${eventId}`)}
-        >
+        <Button variant="outline" onClick={() => router.push(`/admin/events`)}>
           Back to Event
         </Button>
       </div>

@@ -1,5 +1,7 @@
 'use client';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,11 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -19,20 +18,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertCircle,
   Check,
+  MoveDown,
+  MoveUp,
   Plus,
-  Settings,
+  SquareChevronDown,
   Trash2,
   Type,
-  MoveUp,
-  MoveDown,
 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useEventCreation } from '../context/EventCreationContext';
 import { formFieldTypes } from '../../models/form-schema';
-import { useEffect } from 'react';
+import { useEventCreation } from '../context/EventCreationContext';
 
 interface RegistrationFormBuilderProps {
   isEditing?: boolean;
@@ -113,6 +112,8 @@ export default function RegistrationFormBuilder({
                       >
                         {type === 'checkbox' ? (
                           <Check className="mr-2 h-4 w-4" />
+                        ) : type === 'select' ? (
+                          <SquareChevronDown className="mr-2 h-4 w-4" />
                         ) : (
                           <Type className="mr-2 h-4 w-4" />
                         )}

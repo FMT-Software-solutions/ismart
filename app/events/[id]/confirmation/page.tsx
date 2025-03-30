@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
 
-export default function RegistrationConfirmationPage({
+export default async function RegistrationConfirmationPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const [event, setEvent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,7 +25,7 @@ export default function RegistrationConfirmationPage({
         const { data, error } = await supabase
           .from('events')
           .select('title, start_date, location')
-          .eq('id', params.id)
+          .eq('id', id)
           .single();
 
         if (error) throw error;
@@ -37,7 +38,7 @@ export default function RegistrationConfirmationPage({
     };
 
     fetchEvent();
-  }, [params.id]);
+  }, [id]);
 
   if (isLoading) {
     return (
@@ -97,7 +98,7 @@ export default function RegistrationConfirmationPage({
 
             <div className="flex flex-col sm:flex-row gap-3 w-full">
               <Button asChild className="flex-1" variant="outline">
-                <Link href={`/events/${params.id}`}>
+                <Link href={`/events/${id}`}>
                   <ChevronLeft className="h-4 w-4 mr-2" />
                   Back to Event
                 </Link>

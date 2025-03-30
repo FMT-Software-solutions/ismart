@@ -26,6 +26,7 @@ import {
   AlertCircle,
   Clock9,
   MoreHorizontal,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { usePathname, useRouter } from 'next/navigation';
+import ImagePreviewModal from './ImagePreviewModal';
 
 interface EventsTableProps {
   events: Event[];
@@ -87,6 +89,7 @@ export default function EventsTable({
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [viewLoading, setViewLoading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -186,7 +189,12 @@ export default function EventsTable({
       if (error || !event) {
         throw new Error(error || 'Failed to load event details');
       }
-      setViewEvent(event);
+      // Convert gallery_images from null to undefined if needed
+      const processedEvent = {
+        ...event,
+        gallery_images: event.gallery_images || undefined,
+      };
+      setViewEvent(processedEvent);
       setViewModalOpen(true);
     } catch (error: any) {
       toast({
@@ -598,6 +606,35 @@ export default function EventsTable({
           {viewEvent && (
             <>
               <DialogHeader className="space-y-2">
+                {/* Banner Image */}
+                {(viewEvent.bannerImageUrl || viewEvent.banner_image_url) && (
+                  <div
+                    className="relative w-full h-48 md:h-64 -mx-6 -mt-6 mb-6 cursor-pointer overflow-hidden"
+                    onClick={() =>
+                      setPreviewImage(
+                        viewEvent.bannerImageUrl ||
+                          viewEvent.banner_image_url ||
+                          ''
+                      )
+                    }
+                  >
+                    <img
+                      src={
+                        viewEvent.bannerImageUrl || viewEvent.banner_image_url
+                      }
+                      alt="Event banner"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          'https://placehold.co/600x400?text=Banner+preview';
+                        (e.target as HTMLImageElement).classList.add(
+                          'opacity-50'
+                        );
+                      }}
+                    />
+                  </div>
+                )}
+
                 <DialogTitle className="text-xl md:text-2xl text-left">
                   {viewEvent.title}
                 </DialogTitle>
@@ -714,6 +751,44 @@ export default function EventsTable({
                   </div>
                 </div>
 
+                {/* Gallery Images */}
+                {(viewEvent.galleryImages || viewEvent.gallery_images) &&
+                  ((viewEvent.galleryImages?.length || 0) > 0 ||
+                    (viewEvent.gallery_images?.length || 0) > 0) && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold flex items-center">
+                        <ImageIcon className="h-5 w-5 mr-2" />
+                        Gallery
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {(
+                          viewEvent.galleryImages ||
+                          viewEvent.gallery_images ||
+                          []
+                        ).map((imageUrl, index) => (
+                          <div
+                            key={index}
+                            className="relative aspect-square rounded-md overflow-hidden cursor-pointer border bg-gray-50"
+                            onClick={() => setPreviewImage(imageUrl)}
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`Gallery image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  'https://placehold.co/600x400?text=Image+preview';
+                                (e.target as HTMLImageElement).classList.add(
+                                  'opacity-50'
+                                );
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                 {/* Description */}
                 <div className="space-y-2">
                   <h3 className="text-lg font-semibold">Description</h3>
@@ -732,7 +807,11 @@ export default function EventsTable({
                   <Link
                     href={`/admin/events/submissions?eventId=${viewEvent.id}`}
                   >
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
                       View Submissions
                     </Button>
                   </Link>
@@ -748,7 +827,7 @@ export default function EventsTable({
                     <Button
                       size="sm"
                       variant="outline"
-                      className="bg-green-50 hover:bg-green-100 text-green-700"
+                      className="bg-green-50 hover:bg-green-200 text-green-700 hover:text-green-900"
                       onClick={() => {
                         handleStatusUpdate(viewEvent.id, 'published');
                         closeViewModal();
@@ -764,6 +843,13 @@ export default function EventsTable({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Image Preview Modal */}
+      <ImagePreviewModal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        imageUrl={previewImage || ''}
+      />
     </>
   );
 }

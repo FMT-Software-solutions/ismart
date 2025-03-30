@@ -52,7 +52,7 @@ interface EventCreationContextType {
   addField: (type: string) => void;
   updateField: (id: number, updates: Partial<FormField>) => void;
   deleteField: (id: number) => void;
-  saveFormSchema: () => Promise<string | null>;
+  saveFormSchema: (eventId?: string) => Promise<string | null>;
 
   // Navigation
   navigateBack: () => void;
@@ -91,22 +91,28 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
   const [activeField, setActiveField] = useState<number | null>(null);
   const [formBuilderActiveTab, setFormBuilderActiveTab] = useState('fields');
   const [isFormLoading, setIsFormLoading] = useState(false);
+  // Event form state
+  const [eventId, setEventId] = useState<string | null>(null);
+
+  // New fields
+  const [redirectAfterSubmit, setRedirectAfterSubmit] = useState(true);
 
   // Default values for the event form
-  const defaultValues: Partial<EventFormValues> = {
-    title: '',
-    theme: '',
-    description: '',
-    eventType: 'physical',
-    price: 0,
-    hasEarlyBird: false,
-    isFree: false,
-    requireApproval: false,
-  };
-
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
-    defaultValues,
+    defaultValues: {
+      bannerImageUrl: '',
+      galleryImages: [],
+      title: '',
+      theme: '',
+      description: '',
+      location: '',
+      eventType: 'physical',
+      price: 0,
+      hasEarlyBird: false,
+      isFree: false,
+      requireApproval: false,
+    },
   });
 
   // Navigation methods
@@ -138,35 +144,27 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
         document.querySelector('.ProseMirror')?.innerHTML ||
         richTextDescription;
 
-      // Save form schema if there are fields
-      let savedFormSchemaId = formSchemaId;
-      console.log(fields);
-      if (fields.length > 0) {
-        savedFormSchemaId = await saveFormSchema();
+      // Filter out empty gallery image URLs
+      const galleryImages =
+        formData.galleryImages?.filter((url) => url.trim() !== '') || [];
 
-        if (!savedFormSchemaId) {
-          throw new Error('Failed to save form schema');
-        }
-
-        // Update form with new schema ID
-        formData.formSchemaId = savedFormSchemaId;
-      }
-
-      // Create or update event
+      // First create or update the event
       let result;
       if (eventId) {
         // Update existing event
         result = await updateEvent(eventId, {
           ...formData,
           description: richTextContent,
-          formSchemaId: savedFormSchemaId || undefined,
+          galleryImages,
+          // Don't include formSchemaId yet as we'll update it after saving the form schema
         });
       } else {
         // Create new event
         result = await createEvent({
           ...formData,
           description: richTextContent,
-          formSchemaId: savedFormSchemaId || undefined,
+          galleryImages,
+          // Don't include formSchemaId yet as we'll update it after saving the form schema
         });
       }
 
@@ -175,7 +173,34 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
       }
 
       // Set the event ID if it was a new event
-      const newEventId = eventId || (result as any).data?.id;
+      const newEventId = (result as any).eventId;
+
+      // Now save the form schema if there are fields, using the event ID
+      let savedFormSchemaId = formSchemaId;
+      if (fields.length > 0) {
+        // Pass the actual event ID to the form schema
+        console.log('saving form schema with event id: ', newEventId);
+        savedFormSchemaId = await saveFormSchema(newEventId);
+
+        if (!savedFormSchemaId) {
+          throw new Error('Failed to save form schema');
+        }
+
+        // Update the event with the form schema ID
+        if (savedFormSchemaId) {
+          const updateResult = await updateEvent(newEventId, {
+            formSchemaId: savedFormSchemaId,
+          });
+
+          if (!updateResult.success) {
+            toast({
+              title: 'Warning',
+              description: 'Event saved but failed to link registration form',
+              variant: 'default',
+            });
+          }
+        }
+      }
 
       // Publish event if not draft
       if (!isDraft && newEventId) {
@@ -216,9 +241,13 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
   };
 
   // Handler to save form schema
-  const saveFormSchema = async (): Promise<string | null> => {
+  const saveFormSchema = async (
+    eventIdToSave?: string
+  ): Promise<string | null> => {
     try {
       setIsFormLoading(true);
+
+      console.log(eventIdToSave);
 
       if (formSchemaId) {
         // Update existing schema
@@ -227,9 +256,9 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
             title: formTitle,
             description: formDescription,
             fields,
-            event_id: eventId || 'new-event',
-            is_active: true,
           });
+
+          console.log(result);
 
           if (result && result.id) {
             setIsFormLoading(false);
@@ -254,29 +283,35 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
       } else {
         // Create new schema
         try {
-          const result = await createFormSchema({
-            title: formTitle,
-            description: formDescription,
-            fields,
-            event_id: eventId || 'new-event',
-            is_active: true,
-          });
-
-          if (result && result.id) {
-            const newSchemaId = result.id;
-            setFormSchemaId(newSchemaId);
-            form.setValue('formSchemaId', newSchemaId);
-
-            toast({
-              title: 'Success',
-              description: 'Form schema created successfully',
+          if (eventIdToSave) {
+            const result = await createFormSchema({
+              title: formTitle,
+              description: formDescription,
+              fields,
+              event_id: eventIdToSave,
+              is_active: true,
             });
 
-            setIsFormLoading(false);
-            return newSchemaId;
-          } else {
-            throw new Error('Invalid response from createFormSchema');
+            console.log('event id', eventIdToSave);
+            console.log(result);
+
+            if (result && result.id) {
+              const newSchemaId = result.id;
+              setFormSchemaId(newSchemaId);
+              form.setValue('formSchemaId', newSchemaId);
+
+              toast({
+                title: 'Success',
+                description: 'Form schema created successfully',
+              });
+
+              setIsFormLoading(false);
+              return newSchemaId;
+            } else {
+              throw new Error('Invalid response from createFormSchema');
+            }
           }
+          return null;
         } catch (error: any) {
           console.error('Error creating form schema:', error);
           toast({
@@ -390,12 +425,6 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
       setActiveField(null);
     }
   };
-
-  // Event form state
-  const [eventId, setEventId] = useState<string | null>(null);
-
-  // New fields
-  const [redirectAfterSubmit, setRedirectAfterSubmit] = useState(true);
 
   const value = {
     // Event form state

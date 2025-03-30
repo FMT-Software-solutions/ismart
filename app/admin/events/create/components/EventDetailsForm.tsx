@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   FormField,
   FormItem,
@@ -23,11 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import TextEditor from '@/components/TextEditor';
 import { Calendar, MapPin, Type } from 'lucide-react';
 import { useEventCreation } from '../context/EventCreationContext';
+import EventImagesForm from '../../components/EventImagesForm';
 
 export default function EventDetailsForm() {
   const { form, richTextDescription, setRichTextDescription } =
@@ -35,6 +34,8 @@ export default function EventDetailsForm() {
 
   return (
     <div className="space-y-6">
+      <EventImagesForm form={form} />
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">

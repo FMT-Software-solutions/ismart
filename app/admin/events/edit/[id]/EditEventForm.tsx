@@ -64,6 +64,7 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
 
         // Reset form with event data
         form.reset({
+          bannerImageUrl: event.banner_image_url,
           title: event.title,
           theme: event.theme || '',
           description: event.description || '',
@@ -83,6 +84,7 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
           requireApproval: event.require_approval,
           additionalInfo: event.additional_info || '',
           formSchemaId: event.form_schema_id || '',
+          galleryImages: event.gallery_images || [],
         });
 
         // Load form schema if it exists in the event data

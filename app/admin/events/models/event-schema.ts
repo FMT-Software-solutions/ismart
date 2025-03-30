@@ -3,6 +3,19 @@ import * as z from 'zod';
 // Form schema for event creation
 export const eventFormSchema = z
   .object({
+    bannerImageUrl: z.string().url({
+      message: 'Please enter a valid URL for the banner image.',
+    }),
+    galleryImages: z
+      .array(
+        z.string().url({
+          message: 'Please enter a valid URL for the gallery image.',
+        })
+      )
+      .max(10, {
+        message: 'You can add a maximum of 10 gallery images.',
+      })
+      .optional(),
     title: z.string().min(5, {
       message: 'Event title must be at least 5 characters.',
     }),
@@ -81,6 +94,8 @@ export interface FormField {
 // Supabase table schema
 export interface EventTable {
   id: string;
+  banner_image_url: string;
+  gallery_images: string[] | null;
   title: string;
   theme: string | null;
   description: string;
@@ -116,9 +131,14 @@ export interface FormSchema {
   created_at: string;
   updated_at: string;
 }
+
 // Interface for events as they come from the database
 export interface Event {
   id: string;
+  bannerImageUrl?: string;
+  banner_image_url?: string;
+  galleryImages?: string[];
+  gallery_images?: string[];
   title: string;
   theme?: string | null;
   description?: string;
