@@ -5,9 +5,10 @@ import { PaymentForm } from './components/PaymentForm';
 export default async function EventPaymentPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const { event, error } = await getEventById(params.id);
+  const { id } = await params;
+  const { event, error } = await getEventById(id);
 
   if (error || !event) {
     notFound();
@@ -17,7 +18,7 @@ export default async function EventPaymentPage({
   if (event.is_free) {
     return {
       redirect: {
-        destination: `/events/${params.id}/register`,
+        destination: `/events/${id}/register`,
         permanent: false,
       },
     };
