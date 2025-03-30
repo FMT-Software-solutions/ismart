@@ -85,6 +85,7 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
           additionalInfo: event.additional_info || '',
           formSchemaId: event.form_schema_id || '',
           galleryImages: event.gallery_images || [],
+          videoUrl: event.video_url || '',
         });
 
         // Load form schema if it exists in the event data

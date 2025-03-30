@@ -16,7 +16,7 @@ export default function ImagePreviewModal({
 }: ImagePreviewModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogTitle>Image Preview</DialogTitle>
+      <DialogTitle className="invisible">Image Preview</DialogTitle>
       <DialogContent className="max-w-4xl p-0 overflow-hidden">
         <div className="relative w-full h-[80vh] bg-black/10">
           <img

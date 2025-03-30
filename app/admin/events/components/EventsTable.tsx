@@ -27,6 +27,7 @@ import {
   Clock9,
   MoreHorizontal,
   Image as ImageIcon,
+  Video as VideoIcon,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -407,6 +408,24 @@ export default function EventsTable({
     </div>
   );
 
+  // Function to extract YouTube video ID
+  const getYouTubeVideoId = (url: string) => {
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
+
+  // Function to get video embed URL
+  const getVideoEmbedUrl = (url: string) => {
+    const youtubeId = getYouTubeVideoId(url);
+    if (youtubeId) {
+      return `https://www.youtube.com/embed/${youtubeId}`;
+    }
+    // Add support for other video platforms here if needed
+    return url;
+  };
+
   return (
     <>
       <Card>
@@ -751,6 +770,39 @@ export default function EventsTable({
                   </div>
                 </div>
 
+                {/* Description */}
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Description</h3>
+                  <div
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        viewEvent.description || 'No description provided',
+                    }}
+                  />
+                </div>
+
+                {/* Video Section */}
+                {(viewEvent.videoUrl || viewEvent.video_url) && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center">
+                      <VideoIcon className="h-5 w-5 mr-2" />
+                      Event Video
+                    </h3>
+                    <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-gray-100">
+                      <iframe
+                        src={getVideoEmbedUrl(
+                          viewEvent.videoUrl || viewEvent.video_url || ''
+                        )}
+                        title="Event video"
+                        className="absolute top-0 left-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Gallery Images */}
                 {(viewEvent.galleryImages || viewEvent.gallery_images) &&
                   ((viewEvent.galleryImages?.length || 0) > 0 ||
@@ -788,18 +840,6 @@ export default function EventsTable({
                       </div>
                     </div>
                   )}
-
-                {/* Description */}
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Description</h3>
-                  <div
-                    className="prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        viewEvent.description || 'No description provided',
-                    }}
-                  />
-                </div>
               </div>
 
               <DialogFooter className="justify-between gap-2 sm:gap-0">

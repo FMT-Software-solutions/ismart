@@ -103,6 +103,7 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
     defaultValues: {
       bannerImageUrl: '',
       galleryImages: [],
+      videoUrl: '',
       title: '',
       theme: '',
       description: '',

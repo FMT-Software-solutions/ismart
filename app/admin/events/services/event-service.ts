@@ -35,6 +35,7 @@ export async function createEvent(
       status: 'draft',
       registrations_count: 0,
       gallery_images: data.galleryImages || [],
+      video_url: data.videoUrl || null,
     };
 
     const { data: event, error } = await supabase
@@ -95,6 +96,8 @@ export async function updateEvent(
     if (data.title) updateData.title = data.title;
     if (data.bannerImageUrl) updateData.banner_image_url = data.bannerImageUrl;
     if (data.galleryImages) updateData.gallery_images = data.galleryImages;
+    if (data.videoUrl !== undefined)
+      updateData.video_url = data.videoUrl || null;
     if (data.theme !== undefined) updateData.theme = data.theme || null;
     if (data.description) updateData.description = data.description;
     if (data.startDate) updateData.start_date = data.startDate.toISOString();

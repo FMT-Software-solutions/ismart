@@ -90,7 +90,7 @@ export default function EventCreationForm() {
                 </TabsTrigger>
                 <TabsTrigger value="preview" type="button">
                   Preview
-                  <span className="hidden sm:inline mr-1"> & Publish</span>
+                  <span className="hidden sm:inline ml-1"> & Save</span>
                 </TabsTrigger>
               </TabsList>
 

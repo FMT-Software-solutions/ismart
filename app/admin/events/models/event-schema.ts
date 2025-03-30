@@ -16,6 +16,12 @@ export const eventFormSchema = z
         message: 'You can add a maximum of 10 gallery images.',
       })
       .optional(),
+    videoUrl: z
+      .string()
+      .url({
+        message: 'Please enter a valid URL for the video.',
+      })
+      .optional(),
     title: z.string().min(5, {
       message: 'Event title must be at least 5 characters.',
     }),
@@ -96,6 +102,7 @@ export interface EventTable {
   id: string;
   banner_image_url: string;
   gallery_images: string[] | null;
+  video_url: string | null;
   title: string;
   theme: string | null;
   description: string;
@@ -139,6 +146,8 @@ export interface Event {
   banner_image_url?: string;
   galleryImages?: string[];
   gallery_images?: string[];
+  videoUrl?: string | null;
+  video_url?: string | null;
   title: string;
   theme?: string | null;
   description?: string;

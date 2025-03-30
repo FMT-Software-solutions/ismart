@@ -205,7 +205,7 @@ export default function EventDetailsForm() {
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="physical">In-Person</SelectItem>
-                    <SelectItem value="virtual">Virtual</SelectItem>
+                    <SelectItem value="online">Virtual</SelectItem>
                     <SelectItem value="hybrid">Hybrid</SelectItem>
                   </SelectContent>
                 </Select>

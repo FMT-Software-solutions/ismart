@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { Image as ImageIcon, Plus, X } from 'lucide-react';
+import { Image as ImageIcon, Video as VideoIcon, Plus, X } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { EventFormValues } from '../models/event-schema';
 import ImagePreviewModal from './ImagePreviewModal';
@@ -29,6 +29,24 @@ interface EventImagesFormProps {
 export default function EventImagesForm({ form }: EventImagesFormProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // Function to extract YouTube video ID
+  const getYouTubeVideoId = (url: string) => {
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
+
+  // Function to get video embed URL
+  const getVideoEmbedUrl = (url: string) => {
+    const youtubeId = getYouTubeVideoId(url);
+    if (youtubeId) {
+      return `https://www.youtube.com/embed/${youtubeId}`;
+    }
+    // Add support for other video platforms here if needed
+    return url;
+  };
+
   // Function to handle image preview
   const handleImagePreview = (imageUrl: string) => {
     setPreviewImage(imageUrl);
@@ -36,6 +54,7 @@ export default function EventImagesForm({ form }: EventImagesFormProps) {
 
   // Get current gallery images from form state
   const galleryImages = form.watch('galleryImages') || [];
+  const videoUrl = form.watch('videoUrl');
 
   // Function to add a new gallery image
   const addGalleryImage = () => {
@@ -58,10 +77,10 @@ export default function EventImagesForm({ form }: EventImagesFormProps) {
         <CardHeader>
           <CardTitle className="flex items-center">
             <ImageIcon className="mr-2 h-5 w-5" />
-            Event Images
+            Event Media
           </CardTitle>
           <CardDescription>
-            Upload your event banner and gallery images
+            Upload your event banner, video, and gallery images
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -108,6 +127,37 @@ export default function EventImagesForm({ form }: EventImagesFormProps) {
                   </div>
                 </div>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="videoUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Video URL</FormLabel>
+                <div className="space-y-2">
+                  <FormControl>
+                    <Input
+                      placeholder="Enter video URL (YouTube or other video platform)"
+                      {...field}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  {field.value && (
+                    <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-gray-100">
+                      <iframe
+                        src={getVideoEmbedUrl(field.value)}
+                        title="Video preview"
+                        className="absolute top-0 left-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
@@ -191,7 +241,6 @@ export default function EventImagesForm({ form }: EventImagesFormProps) {
         </CardContent>
       </Card>
 
-      {/* Image Preview Modal */}
       <ImagePreviewModal
         isOpen={!!previewImage}
         onClose={() => setPreviewImage(null)}

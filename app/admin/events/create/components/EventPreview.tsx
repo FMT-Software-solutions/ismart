@@ -15,6 +15,7 @@ import {
   CheckCircle,
   AlertTriangle,
   Image as ImageIcon,
+  Video as VideoIcon,
 } from 'lucide-react';
 import { useEventCreation } from '../context/EventCreationContext';
 import { EventFormValues } from '../../models/event-schema';
@@ -47,6 +48,24 @@ export default function EventPreview() {
   const missingFields = requiredFields.filter(
     ({ key }) => !formData[key as keyof EventFormValues]
   );
+
+  // Function to extract YouTube video ID
+  const getYouTubeVideoId = (url: string) => {
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
+
+  // Function to get video embed URL
+  const getVideoEmbedUrl = (url: string) => {
+    const youtubeId = getYouTubeVideoId(url);
+    if (youtubeId) {
+      return `https://www.youtube.com/embed/${youtubeId}`;
+    }
+    // Add support for other video platforms here if needed
+    return url;
+  };
 
   return (
     <div className="space-y-6">
@@ -166,7 +185,9 @@ export default function EventPreview() {
                 <div>
                   <h3 className="text-sm font-medium">Event Type</h3>
                   <p className="text-sm capitalize text-gray-500">
-                    {formData.eventType || 'Type not set'}
+                    {formData.eventType === 'online'
+                      ? 'Virtual'
+                      : formData.eventType || 'Type not set'}
                   </p>
                 </div>
               </div>
@@ -235,6 +256,25 @@ export default function EventPreview() {
               <p className="text-gray-500">No description provided</p>
             )}
           </div>
+
+          {/* Video Section */}
+          {formData.videoUrl && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium flex items-center">
+                <VideoIcon className="h-5 w-5 mr-2" />
+                Event Video
+              </h3>
+              <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-gray-100">
+                <iframe
+                  src={getVideoEmbedUrl(formData.videoUrl)}
+                  title="Event video"
+                  className="absolute top-0 left-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
 
           {/* Gallery Images */}
           {formData.galleryImages && formData.galleryImages.length > 0 && (
