@@ -292,9 +292,10 @@ export default function SexualityPage() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button asChild>
+                    {/* TODO: enable this back */}
+                    {/* <Button asChild>
                       <Link href="/trainings/register">Register Now</Link>
-                    </Button>
+                    </Button> */}
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -485,9 +486,10 @@ export default function SexualityPage() {
               variants={fadeIn}
               className="flex flex-wrap justify-center gap-4"
             >
-              <Button size="lg" variant="secondary" asChild>
+              {/* TODO: enable this back */}
+              {/* <Button size="lg" variant="secondary" asChild>
                 <Link href="/trainings/register">Register Now</Link>
-              </Button>
+              </Button> */}
               <Button
                 size="lg"
                 variant="outline"

@@ -21,6 +21,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { EventFormValues } from '../models/event-schema';
 import ImagePreviewModal from './ImagePreviewModal';
 import { useState } from 'react';
+import { getVideoEmbedUrl } from '@/lib/utils';
 
 interface EventImagesFormProps {
   form: UseFormReturn<EventFormValues>;
@@ -28,24 +29,6 @@ interface EventImagesFormProps {
 
 export default function EventImagesForm({ form }: EventImagesFormProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  // Function to extract YouTube video ID
-  const getYouTubeVideoId = (url: string) => {
-    const regExp =
-      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11 ? match[2] : null;
-  };
-
-  // Function to get video embed URL
-  const getVideoEmbedUrl = (url: string) => {
-    const youtubeId = getYouTubeVideoId(url);
-    if (youtubeId) {
-      return `https://www.youtube.com/embed/${youtubeId}`;
-    }
-    // Add support for other video platforms here if needed
-    return url;
-  };
 
   // Function to handle image preview
   const handleImagePreview = (imageUrl: string) => {

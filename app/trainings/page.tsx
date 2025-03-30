@@ -343,9 +343,11 @@ export default function trainingsPage() {
                         </div>
                       </CardContent>
                       <CardFooter>
-                        <Button asChild>
+                        {/* TODO: enable this back */}
+                        {/* <Button asChild>
                           <Link href="/trainings/register">Register Now</Link>
-                        </Button>
+                          
+                        </Button> */}
                       </CardFooter>
                     </Card>
                   ))}
@@ -411,9 +413,11 @@ export default function trainingsPage() {
                         </div>
                       </CardContent>
                       <CardFooter>
-                        <Button asChild>
+                        {/* TODO: enable this back */}
+                        {/* <Button asChild disabled>
                           <Link href="/trainings/register">Register Now</Link>
-                        </Button>
+                          
+                        </Button> */}
                       </CardFooter>
                     </Card>
                   ))}
@@ -479,9 +483,10 @@ export default function trainingsPage() {
                         </div>
                       </CardContent>
                       <CardFooter>
-                        <Button asChild>
+                        {/* TODO: enable this back */}
+                        {/* <Button asChild disabled>
                           <Link href="/trainings/register">Register Now</Link>
-                        </Button>
+                        </Button> */}
                       </CardFooter>
                     </Card>
                   ))}
@@ -550,9 +555,9 @@ export default function trainingsPage() {
                         <span>{event.location}</span>
                       </div>
                     </div>
-                    <Button asChild>
+                    {/* <Button asChild>
                       <Link href="/trainings/register">Register Now</Link>
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
               </motion.div>
@@ -664,9 +669,10 @@ export default function trainingsPage() {
               variants={fadeIn}
               className="flex flex-wrap justify-center gap-4"
             >
-              <Button size="lg" variant="secondary" asChild>
+              {/* TODO: enable this back */}
+              {/* <Button size="lg" variant="secondary" asChild>
                 <Link href="/trainings/register">Register Now</Link>
-              </Button>
+              </Button> */}
               <Button
                 size="lg"
                 variant="outline"

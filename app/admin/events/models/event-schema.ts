@@ -87,6 +87,13 @@ export type FormFieldType =
   | 'checkbox'
   | 'textarea';
 
+export type EventStatus =
+  | 'draft'
+  | 'published'
+  | 'completed'
+  | 'cancelled'
+  | 'archived';
+
 // Interface for form field
 export interface FormField {
   id: number;
@@ -122,9 +129,10 @@ export interface EventTable {
   form_schema_id: string | null; // Reference to the form schema
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
-  status: 'draft' | 'published' | 'completed' | 'cancelled';
+  status: EventStatus;
   registrations_count: number;
   is_active?: boolean;
+  whatsapp_group_url: string | null;
 }
 
 // Interface for form schema
@@ -178,7 +186,8 @@ export interface Event {
   form_schema_id?: string | null; // Database field name
   created_at?: string; // ISO date string
   updated_at?: string; // ISO date string
-  status?: string;
+  status?: EventStatus;
   is_active?: boolean;
   registrations_count?: number;
+  whatsapp_group_url?: string | null;
 }

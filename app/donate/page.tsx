@@ -482,7 +482,8 @@ export default function DonatePage() {
                         )}
                       />
 
-                      <Button type="submit" className="w-full">
+                      {/* TODO: enable this back */}
+                      <Button type="submit" className="w-full" disabled>
                         Donate Now
                       </Button>
                     </form>

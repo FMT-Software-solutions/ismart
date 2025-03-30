@@ -103,3 +103,29 @@ export async function deleteFormSubmission(id: string) {
     throw new Error(`Error deleting form submission: ${error.message}`);
   }
 }
+
+export async function getFormSubmissions() {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('form_submissions')
+    .select(
+      `
+      *,
+      events (
+        id,
+        title,
+        start_date,
+        location
+      )
+    `
+    )
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching form submissions:', error);
+    throw error;
+  }
+
+  return data;
+}

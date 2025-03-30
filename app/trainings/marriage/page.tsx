@@ -294,9 +294,10 @@ export default function MarriagePage() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button asChild>
+                    {/* TODO: enable this back */}
+                    {/* <Button asChild>
                       <Link href="/trainings/register">Register Now</Link>
-                    </Button>
+                    </Button> */}
                   </CardFooter>
                 </Card>
               </motion.div>

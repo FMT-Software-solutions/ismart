@@ -229,3 +229,36 @@ export async function updateEventStatus(
     return { success: false, error: 'An unexpected error occurred' };
   }
 }
+
+export async function incrementRegistrationCount(eventId: string) {
+  const supabase = createClient();
+
+  // First get the current count
+  const { data: currentData, error: fetchError } = await supabase
+    .from('events')
+    .select('registrations_count')
+    .eq('id', eventId)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching registration count:', fetchError);
+    return { error: fetchError };
+  }
+
+  const currentCount = currentData?.registrations_count || 0;
+
+  // Then update with the incremented count
+  const { data, error } = await supabase
+    .from('events')
+    .update({ registrations_count: currentCount + 1 })
+    .eq('id', eventId)
+    .select('registrations_count')
+    .single();
+
+  if (error) {
+    console.error('Error incrementing registration count:', error);
+    return { error };
+  }
+
+  return { data };
+}

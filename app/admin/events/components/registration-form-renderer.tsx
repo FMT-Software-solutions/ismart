@@ -84,6 +84,7 @@ export default function RegistrationFormRenderer({
   }, [eventId, toast]);
 
   const handleChange = (fieldId: number, value: any) => {
+    console.log(fieldId);
     setFormData({
       ...formData,
       [`field_${fieldId}`]: value,
@@ -155,14 +156,6 @@ export default function RegistrationFormRenderer({
       if (onSubmit) {
         await onSubmit(submissionData);
       }
-
-      toast({
-        title: 'Success',
-        description: 'Your registration has been submitted',
-      });
-
-      // Redirect or clear form as needed
-      router.push(`/events/${eventId}/confirmation`);
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({

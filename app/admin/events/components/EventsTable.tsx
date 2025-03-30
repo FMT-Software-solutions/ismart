@@ -67,6 +67,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { usePathname, useRouter } from 'next/navigation';
 import ImagePreviewModal from './ImagePreviewModal';
+import { getVideoEmbedUrl } from '@/lib/utils';
 
 interface EventsTableProps {
   events: Event[];
@@ -408,24 +409,6 @@ export default function EventsTable({
     </div>
   );
 
-  // Function to extract YouTube video ID
-  const getYouTubeVideoId = (url: string) => {
-    const regExp =
-      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11 ? match[2] : null;
-  };
-
-  // Function to get video embed URL
-  const getVideoEmbedUrl = (url: string) => {
-    const youtubeId = getYouTubeVideoId(url);
-    if (youtubeId) {
-      return `https://www.youtube.com/embed/${youtubeId}`;
-    }
-    // Add support for other video platforms here if needed
-    return url;
-  };
-
   return (
     <>
       <Card>
@@ -748,7 +731,7 @@ export default function EventsTable({
                           <p className="text-sm text-muted-foreground">
                             {viewEvent.isFree || viewEvent.is_free
                               ? 'Free Event'
-                              : `$${viewEvent.price} per person`}
+                              : `GHS${viewEvent.price} per person`}
                           </p>
                           {(viewEvent.hasEarlyBird ||
                             viewEvent.has_early_bird) && (
