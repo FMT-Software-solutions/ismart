@@ -110,16 +110,8 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
         });
 
         // Redirect or clear form as needed
-        router.push(`/events/${event.id}/confirmation`);
-
         setIsRedirecting(true);
-        // Simulate a delay before redirecting to WhatsApp
-        setTimeout(() => {
-          // Use a default WhatsApp group link if not provided
-          const whatsappLink =
-            event.whatsapp_group_url || 'https://whatsapp.com';
-          window.location.href = whatsappLink;
-        }, 5000);
+        router.push(`/events/${event.id}/confirmation`);
       } else {
         // For paid events, store the submission data in session storage
         sessionStorage.setItem(

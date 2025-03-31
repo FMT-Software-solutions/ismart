@@ -17,8 +17,10 @@ export interface AdminCreateUserRequest {
 export interface AdminUpdateUserRequest {
   id: string;
   full_name?: string;
+  email?: string;
   reset_password?: boolean;
   new_password?: string;
+  is_first_login?: boolean;
 }
 
 export interface Event {

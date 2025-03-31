@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { EventTable } from '@/app/admin/events/models/event-schema';
 import { format } from 'date-fns';
 import { createFormSubmission } from '@/app/admin/events/services/form-submission-service';
 import { incrementRegistrationCount } from '@/app/admin/events/services/event-service';
+import { PaystackPayment } from './PaystackPayment';
 
 interface PaymentFormProps {
   event: EventTable;
@@ -37,24 +37,8 @@ export function PaymentForm({ event }: PaymentFormProps) {
     }
   }, [event.id, router, toast]);
 
-  const handlePayment = async () => {
-    if (!registrationData) {
-      toast({
-        title: 'Error',
-        description: 'Registration data not found. Please register again.',
-        variant: 'destructive',
-      });
-      router.push(`/events/${event.id}/register`);
-      return;
-    }
-
+  const handlePaymentSuccess = async () => {
     try {
-      setIsProcessing(true);
-
-      // TODO: Implement Stripe payment integration
-      // For now, we'll just simulate a payment process
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
       // Create form submission after successful payment
       await createFormSubmission(registrationData);
 
@@ -74,11 +58,7 @@ export function PaymentForm({ event }: PaymentFormProps) {
       });
 
       // Redirect to WhatsApp group or confirmation page
-      if (event.whatsapp_group_url) {
-        window.location.href = event.whatsapp_group_url;
-      } else {
-        router.push(`/events/${event.id}/confirmation`);
-      }
+      router.push(`/events/${event.id}/confirmation`);
     } catch (error) {
       console.error('Payment error:', error);
       toast({
@@ -92,9 +72,20 @@ export function PaymentForm({ event }: PaymentFormProps) {
     }
   };
 
+  const handlePaymentClose = () => {
+    toast({
+      title: 'Payment Cancelled',
+      description: 'You have cancelled the payment process.',
+      variant: 'destructive',
+    });
+    setIsProcessing(false);
+  };
+
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'MMMM d, yyyy');
   };
+
+  console.log(registrationData);
 
   // Show loading state while checking registration data
   if (!registrationData) {
@@ -109,6 +100,13 @@ export function PaymentForm({ event }: PaymentFormProps) {
       </Card>
     );
   }
+
+  const currentPrice =
+    event.has_early_bird &&
+    event.early_bird_price &&
+    new Date() < new Date(event.early_bird_deadline as string)
+      ? event.early_bird_price
+      : event.price;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -147,41 +145,25 @@ export function PaymentForm({ event }: PaymentFormProps) {
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between items-center font-semibold">
                   <span>Total</span>
-                  <span>
-                    GHS
-                    {(event.has_early_bird &&
-                    event.early_bird_price &&
-                    new Date() < new Date(event.early_bird_deadline as string)
-                      ? event.early_bird_price
-                      : event.price
-                    ).toFixed(2)}
-                  </span>
+                  <span>GHS{currentPrice.toFixed(2)}</span>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={handlePayment}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing Payment...
-                </>
-              ) : (
-                `Pay GHS${(event.has_early_bird &&
-                event.early_bird_price &&
-                new Date() < new Date(event.early_bird_deadline as string)
-                  ? event.early_bird_price
-                  : event.price
-                ).toFixed(2)}`
-              )}
-            </Button>
+            <PaystackPayment
+              email={registrationData.responses['Email Address']}
+              amount={currentPrice}
+              metadata={{
+                name: registrationData.responses['Full Name'],
+                phone: registrationData.responses['Phone Number'],
+                custom_fields: [],
+              }}
+              onSuccess={handlePaymentSuccess}
+              onClose={handlePaymentClose}
+              isProcessing={isProcessing}
+            />
             <p className="text-sm text-muted-foreground text-center">
               You will be redirected to our secure payment processor
             </p>
