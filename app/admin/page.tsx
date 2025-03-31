@@ -34,10 +34,6 @@ export default async function AdminDashboard() {
     .from('events')
     .select('*', { count: 'exact', head: true });
 
-  const { count: registrationCount } = await supabase
-    .from('registrations')
-    .select('*', { count: 'exact', head: true });
-
   return (
     <div className="space-y-6">
       <div>
@@ -76,7 +72,7 @@ export default async function AdminDashboard() {
           </Card>
         </Link>
 
-        <Link href="/admin/registrations">
+        <Link href="/admin/events/submissions?eventId=all-events">
           <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">

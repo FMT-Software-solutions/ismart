@@ -180,7 +180,6 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
       let savedFormSchemaId = formSchemaId;
       if (fields.length > 0) {
         // Pass the actual event ID to the form schema
-        console.log('saving form schema with event id: ', newEventId);
         savedFormSchemaId = await saveFormSchema(newEventId);
 
         if (!savedFormSchemaId) {
@@ -248,8 +247,6 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
     try {
       setIsFormLoading(true);
 
-      console.log(eventIdToSave);
-
       if (formSchemaId) {
         // Update existing schema
         try {
@@ -258,8 +255,6 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
             description: formDescription,
             fields,
           });
-
-          console.log(result);
 
           if (result && result.id) {
             setIsFormLoading(false);
@@ -292,9 +287,6 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
               event_id: eventIdToSave,
               is_active: true,
             });
-
-            console.log('event id', eventIdToSave);
-            console.log(result);
 
             if (result && result.id) {
               const newSchemaId = result.id;

@@ -250,7 +250,7 @@ export async function incrementRegistrationCount(eventId: string) {
   // Then update with the incremented count
   const { data, error } = await supabase
     .from('events')
-    .update({ registrations_count: Number(currentCount) + 1 })
+    .update({ registrations_count: Number(currentCount + 1) })
     .eq('id', eventId)
     .select('registrations_count')
     .single();
@@ -261,4 +261,18 @@ export async function incrementRegistrationCount(eventId: string) {
   }
 
   return { data };
+}
+
+export async function getEvents() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('events')
+    .select('id, title')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return { events: null, error };
+  }
+
+  return { events: data as Pick<EventTable, 'id' | 'title'>[], error: null };
 }

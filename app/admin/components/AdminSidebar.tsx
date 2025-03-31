@@ -53,7 +53,7 @@ const AdminSidebar = () => {
     { label: 'Events', href: '/admin/events', icon: <Calendar size={20} /> },
     {
       label: 'Registrations',
-      href: '/admin/registrations',
+      href: '/admin/events/submissions?eventId=all-events',
       icon: <ClipboardList size={20} />,
     },
   ];
@@ -115,7 +115,8 @@ const AdminSidebar = () => {
                     href={item.href}
                     className={`flex items-center p-2 rounded-md transition-colors
                       ${
-                        pathname === item.href
+                        pathname === item.href ||
+                        pathname === item.href.split('?')[0]
                           ? 'bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-200'
                           : 'hover:bg-gray-200 dark:hover:bg-gray-800'
                       }

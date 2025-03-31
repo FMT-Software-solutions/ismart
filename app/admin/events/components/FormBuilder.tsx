@@ -187,9 +187,6 @@ export default function FormBuilder({
   // Handle form save
   const handleSave = async () => {
     try {
-      // In a real app, you would send this to your API
-      console.log('Saving form schema:', formSchema);
-
       // Navigate back to event details
       router.push(`/admin/events/${eventId}`);
     } catch (error) {

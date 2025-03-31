@@ -1,25 +1,45 @@
+import { getEvents } from '../services/event-service';
 import { getFormSubmissions } from '../services/form-submission-service';
-import { SubmissionsTable } from './components/SubmissionsTable';
+import { SubmissionsClient } from './components/submissions-client';
+import { Suspense } from 'react';
 
-export default async function SubmissionsPage() {
-  try {
-    const submissions = await getFormSubmissions();
+interface SubmissionsPageProps {
+  searchParams: {
+    eventId?: string;
+  };
+}
 
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <h1 className="text-2xl font-bold mb-4">Event Submissions</h1>
-        <SubmissionsTable submissions={submissions || []} />
-      </div>
-    );
-  } catch (error) {
+export default async function SubmissionsPage({
+  searchParams,
+}: SubmissionsPageProps) {
+  const { eventId } = searchParams;
+
+  // Get submissions with filters - only filter by eventId on the server
+  // If eventId is 'all-events' or undefined, fetch all submissions
+  const { submissions, error } = await getFormSubmissions(
+    eventId === 'all-events' ? undefined : eventId
+  );
+  const { events, error: eventsError } = await getEvents();
+
+  if (error || eventsError) {
     console.error('Error fetching submissions:', error);
     return (
-      <div className="container mx-auto py-8 px-4">
-        <h1 className="text-2xl font-bold mb-4">Event Submissions</h1>
-        <div className="text-red-500">
-          Error loading submissions. Please try again later.
+      <div className="container mx-auto py-10">
+        <div className="text-center p-4 border rounded-md bg-red-50 text-red-600">
+          Error loading data. Please try again later.
         </div>
       </div>
     );
   }
+
+  return (
+    <div className="container mx-auto py-10">
+      <Suspense fallback={<div>Loading submissions...</div>}>
+        <SubmissionsClient
+          submissions={submissions || []}
+          events={events || []}
+        />
+      </Suspense>
+    </div>
+  );
 }

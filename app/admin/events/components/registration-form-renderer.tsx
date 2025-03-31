@@ -52,7 +52,6 @@ export default function RegistrationFormRenderer({
       try {
         setIsLoading(true);
         const schema = await getEventFormSchema(eventId);
-        console.log(schema);
 
         if (schema) {
           const formattedSchema = {
