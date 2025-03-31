@@ -1,6 +1,6 @@
 export const featureFlags = {
   about: true,
-  trainings: false,
+  trainings: true,
   research: true,
   donate: true,
   contact: true,

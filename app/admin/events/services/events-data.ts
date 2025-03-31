@@ -24,6 +24,7 @@ export async function getEvents(): Promise<{
     // Map database field names to client-side field names
     const events = data.map((event: any) => ({
       id: event.id,
+      bannerImageUrl: event.banner_image_url,
       title: event.title,
       theme: event.theme,
       description: event.description,

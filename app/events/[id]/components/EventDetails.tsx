@@ -1,41 +1,28 @@
 'use client';
 
-import { useState } from 'react';
-import { format } from 'date-fns';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import ImagePreviewModal from '@/app/admin/events/components/ImagePreviewModal';
+import { EventTable } from '@/app/admin/events/models/event-schema';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getVideoEmbedUrl } from '@/lib/utils';
+import { format } from 'date-fns';
 import {
   Calendar,
-  Clock,
-  MapPin,
-  Users,
-  DollarSign,
   CalendarClock,
-  Video,
+  MapPin,
   ReceiptCent,
+  Users,
 } from 'lucide-react';
-import { EventTable } from '@/app/admin/events/models/event-schema';
-import { getVideoEmbedUrl } from '@/lib/utils';
-import ImagePreviewModal from '@/app/admin/events/components/ImagePreviewModal';
+import Image from 'next/image';
+import { useState } from 'react';
 
 interface EventDetailsProps {
   event: EventTable;
 }
 
 export function EventDetails({ event }: EventDetailsProps) {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState('details');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -46,6 +33,8 @@ export function EventDetails({ event }: EventDetailsProps) {
   const formatTime = (dateString: string) => {
     return format(new Date(dateString), 'h:mm a');
   };
+
+  console.log(event);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -150,7 +139,9 @@ export function EventDetails({ event }: EventDetailsProps) {
                   <MapPin className="h-5 w-5 mr-2 text-muted-foreground" />
                   <div>
                     <p className="font-medium">Location</p>
-                    <p className="text-muted-foreground">{event.location}</p>
+                    <p className="text-muted-foreground">
+                      {event.location ? event.location : 'Not set'}
+                    </p>
                   </div>
                 </div>
 
@@ -180,13 +171,17 @@ export function EventDetails({ event }: EventDetailsProps) {
                       ) : (
                         <>
                           <p className="text-muted-foreground">
-                            GHS{event.price.toFixed(2)}
+                            {event.price === 0
+                              ? 'Not set'
+                              : `GHS ${event.price.toFixed(2)}`}
                           </p>
-                          {event.has_early_bird && event.early_bird_price && (
-                            <Badge variant="secondary">
-                              Early Bird: ${event.early_bird_price.toFixed(2)}
-                            </Badge>
-                          )}
+                          {event.has_early_bird &&
+                            event.early_bird_price != null &&
+                            event.early_bird_price > 0 && (
+                              <Badge variant="secondary">
+                                Early Bird: ${event.early_bird_price.toFixed(2)}
+                              </Badge>
+                            )}
                         </>
                       )}
                     </div>
@@ -198,7 +193,9 @@ export function EventDetails({ event }: EventDetailsProps) {
                   <div>
                     <p className="font-medium">Registration Deadline</p>
                     <p className="text-muted-foreground">
-                      {formatDate(event.registration_deadline)}
+                      {event.registration_deadline
+                        ? formatDate(event.registration_deadline)
+                        : 'No set'}
                     </p>
                     {event.has_early_bird && event.early_bird_deadline && (
                       <p className="text-sm text-muted-foreground">

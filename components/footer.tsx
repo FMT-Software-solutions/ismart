@@ -69,14 +69,24 @@ export default function Footer() {
                 </li>
               )}
               {featureFlags.trainings && (
-                <li>
-                  <Link
-                    href="/trainings"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Trainings
-                  </Link>
-                </li>
+                <>
+                  <li>
+                    <Link
+                      href="/events"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Events & Trainings
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/trainings/register"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Register for Training
+                    </Link>
+                  </li>
+                </>
               )}
               {featureFlags.research && (
                 <li>

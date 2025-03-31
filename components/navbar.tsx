@@ -44,13 +44,14 @@ const navLinks = [
     visible: featureFlags.campaigns,
   },
   {
-    title: 'Trainings',
-    href: '/trainings',
+    title: 'Events & Trainings',
+    href: '/events',
     submenu: [
+      { title: 'All Events', href: '/events' },
       // { title: 'Sexuality Studies', href: '/trainings/sexuality' },
       // { title: 'Marriage & Relationships', href: '/trainings/marriage' },
       // { title: 'Parenting & Family Life', href: '/trainings/family' },
-      { title: 'Register for Training', href: '/trainings/register' },
+      // { title: 'Register for Training', href: '/trainings/register' },
     ],
     visible: featureFlags.trainings,
   },
