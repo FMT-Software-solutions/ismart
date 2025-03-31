@@ -57,8 +57,8 @@ export const eventFormSchema = z
     }),
     capacity: z
       .number()
-      .min(1, {
-        message: 'Capacity must be at least 1.',
+      .min(0, {
+        message: 'Capacity cannot be negative.',
       })
       .optional(),
     isFree: z.boolean().default(false),
