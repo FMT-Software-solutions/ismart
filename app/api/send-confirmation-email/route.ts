@@ -7,8 +7,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   try {
-    const { event, recipientEmail, recipientName, registrationDetails } =
-      await request.json();
+    const { event, recipientEmail, recipientName } = await request.json();
 
     const formattedDate = format(
       new Date(event.start_date),
