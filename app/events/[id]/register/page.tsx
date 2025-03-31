@@ -21,7 +21,9 @@ export default async function EventRegistrationPage({
 
   // Check if event is at capacity
   const isAtCapacity =
-    event.capacity !== null && event.registrations_count >= event.capacity;
+    event.capacity !== null &&
+    event.capacity !== 0 &&
+    event.registrations_count >= event.capacity;
 
   return (
     <div className="container mx-auto py-8 px-4">

@@ -3,11 +3,13 @@
 import ImagePreviewModal from '@/app/admin/events/components/ImagePreviewModal';
 import { EventTable } from '@/app/admin/events/models/event-schema';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getVideoEmbedUrl } from '@/lib/utils';
-import { format } from 'date-fns';
+import { formatDate, getVideoEmbedUrl } from '@/lib/utils';
+import { checkEventRegistrationStatus } from '../utils/event-registration';
+
 import {
   Calendar,
   CalendarClock,
@@ -16,6 +18,7 @@ import {
   Users,
 } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 interface EventDetailsProps {
@@ -23,18 +26,16 @@ interface EventDetailsProps {
 }
 
 export function EventDetails({ event }: EventDetailsProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('details');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'MMMM d, yyyy');
-  };
+  const registrationStatus = checkEventRegistrationStatus(event);
 
-  const formatTime = (dateString: string) => {
-    return format(new Date(dateString), 'h:mm a');
-  };
-
-  console.log(event);
+  // Check if registration is closed
+  const now = new Date();
+  const registrationDeadline = new Date(event.registration_deadline);
+  const isRegistrationClosed = now > registrationDeadline;
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -209,25 +210,30 @@ export function EventDetails({ event }: EventDetailsProps) {
 
               <Separator />
 
-              {/* <div className="space-y-4">
-                <Button
-                  className="w-full"
-                  size="lg"
-                  onClick={() => router.push(`/events/${event.id}/register`)}
-                >
-                  Register Now
-                </Button>
-
-                {event.require_approval && (
-                  <p className="text-sm text-muted-foreground text-center">
-                    * Registration requires approval
-                  </p>
+              <div className="space-y-4">
+                {!registrationStatus.canRegister ? (
+                  <div className="text-center py-8">
+                    <h2 className="text-xl font-semibold text-red-500 mb-4">
+                      Registration Unavailable
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {registrationStatus.message}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      onClick={() =>
+                        router.push(`/events/${event.id}/register`)
+                      }
+                    >
+                      Register Now
+                    </Button>
+                  </>
                 )}
-              </div> */}
-
-              <p className="text-sm text-muted-foreground text-center">
-                * Registration will be opened soon
-              </p>
+              </div>
             </CardContent>
           </Card>
         </div>

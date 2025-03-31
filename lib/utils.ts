@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { format } from 'date-fns';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -20,4 +21,12 @@ export const getVideoEmbedUrl = (url: string) => {
   }
   // Add support for other video platforms here if needed
   return url;
+};
+
+export const formatDate = (dateString: string) => {
+  return format(new Date(dateString), 'MMMM d, yyyy');
+};
+
+export const formatTime = (dateString: string) => {
+  return format(new Date(dateString), 'h:mm a');
 };

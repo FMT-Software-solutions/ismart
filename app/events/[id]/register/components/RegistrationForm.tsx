@@ -1,16 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
-import { EventTable } from '@/app/admin/events/models/event-schema';
 import RegistrationFormRenderer from '@/app/admin/events/components/registration-form-renderer';
-import { createFormSubmission } from '@/app/admin/events/services/form-submission-service';
+import { EventTable } from '@/app/admin/events/models/event-schema';
 import { incrementRegistrationCount } from '@/app/admin/events/services/event-service';
-import { createClient } from '@/lib/supabase/client';
+import { createFormSubmission } from '@/app/admin/events/services/form-submission-service';
+import { Card } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface RegistrationFormProps {
   event: EventTable;
