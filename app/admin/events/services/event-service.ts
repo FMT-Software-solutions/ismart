@@ -250,7 +250,7 @@ export async function incrementRegistrationCount(eventId: string) {
   // Then update with the incremented count
   const { data, error } = await supabase
     .from('events')
-    .update({ registrations_count: currentCount + 1 })
+    .update({ registrations_count: Number(currentCount) + 1 })
     .eq('id', eventId)
     .select('registrations_count')
     .single();

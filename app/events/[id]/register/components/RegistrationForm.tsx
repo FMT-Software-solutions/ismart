@@ -34,7 +34,7 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
         return;
       }
 
-      // Create form submission
+      // Create submission data
       const submissionData = {
         ...formData,
         event_id: event.id,
@@ -44,7 +44,7 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
         user_id: '',
       };
 
-      // If it's a free event, show WhatsApp redirect message
+      // If it's a free event, create submission immediately
       if (event.is_free) {
         await createFormSubmission(submissionData);
 
@@ -76,7 +76,13 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
           window.location.href = whatsappLink;
         }, 5000);
       } else {
-        // For paid events, redirect to payment page
+        // For paid events, store the submission data in session storage
+        sessionStorage.setItem(
+          `event_registration_${event.id}`,
+          JSON.stringify(submissionData)
+        );
+
+        // Redirect to payment page
         router.push(`/events/${event.id}/payment`);
       }
     } catch (error) {

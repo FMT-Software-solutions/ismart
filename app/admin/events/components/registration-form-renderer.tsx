@@ -44,27 +44,35 @@ export default function RegistrationFormRenderer({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
+  // Create a mapping between field IDs and labels
+  const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
+
   useEffect(() => {
     const loadFormSchema = async () => {
       try {
         setIsLoading(true);
         const schema = await getEventFormSchema(eventId);
+        console.log(schema);
 
-        // Convert null to undefined or adapt schema to match FormSchema type
         if (schema) {
-          // Handle conversion from FormSchemaTable to FormSchema if needed
           const formattedSchema = {
             ...schema,
             description: schema.description || undefined,
           };
           setFormSchema(formattedSchema);
 
-          // Initialize form data with empty values
+          // Initialize form data with empty values using unique field IDs
           const initialData: Record<string, any> = {};
+          const mapping: Record<string, string> = {};
+
           schema.fields.forEach((field) => {
-            initialData[`field_${field.id}`] = '';
+            const fieldId = `field_${field.id}`;
+            initialData[fieldId] = '';
+            mapping[fieldId] = field.label;
           });
+
           setFormData(initialData);
+          setFieldMapping(mapping);
         } else {
           setFormSchema(null);
         }
@@ -83,17 +91,17 @@ export default function RegistrationFormRenderer({
     loadFormSchema();
   }, [eventId, toast]);
 
-  const handleChange = (fieldId: number, value: any) => {
-    console.log(fieldId);
+  const handleChange = (field: FormField, value: any) => {
+    const fieldId = `field_${field.id}`;
     setFormData({
       ...formData,
-      [`field_${fieldId}`]: value,
+      [fieldId]: value,
     });
 
     // Clear error when field is updated
-    if (errors[`field_${fieldId}`]) {
+    if (errors[fieldId]) {
       const newErrors = { ...errors };
-      delete newErrors[`field_${fieldId}`];
+      delete newErrors[fieldId];
       setErrors(newErrors);
     }
   };
@@ -146,11 +154,23 @@ export default function RegistrationFormRenderer({
     try {
       setSubmitting(true);
 
-      // Format the submission data
+      // Transform the form data to use labels as keys for submission
+      const labelBasedData = Object.entries(formData).reduce(
+        (acc, [fieldId, value]) => {
+          const label = fieldMapping[fieldId];
+          if (label) {
+            acc[label] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, any>
+      );
+
+      // Format the submission data using labels
       const submissionData = {
         event_id: eventId,
         form_schema_id: formSchema?.id,
-        responses: formData,
+        responses: labelBasedData,
       };
 
       if (onSubmit) {
@@ -185,7 +205,7 @@ export default function RegistrationFormRenderer({
             id={fieldId}
             placeholder={field.placeholder}
             value={value}
-            onChange={(e) => handleChange(field.id, e.target.value)}
+            onChange={(e) => handleChange(field, e.target.value)}
             className={error ? 'border-red-500' : ''}
           />
         )}
@@ -196,7 +216,7 @@ export default function RegistrationFormRenderer({
             type="email"
             placeholder={field.placeholder}
             value={value}
-            onChange={(e) => handleChange(field.id, e.target.value)}
+            onChange={(e) => handleChange(field, e.target.value)}
             className={error ? 'border-red-500' : ''}
           />
         )}
@@ -207,7 +227,7 @@ export default function RegistrationFormRenderer({
             type="tel"
             placeholder={field.placeholder}
             value={value}
-            onChange={(e) => handleChange(field.id, e.target.value)}
+            onChange={(e) => handleChange(field, e.target.value)}
             className={error ? 'border-red-500' : ''}
           />
         )}
@@ -217,7 +237,7 @@ export default function RegistrationFormRenderer({
             id={fieldId}
             placeholder={field.placeholder}
             value={value}
-            onChange={(e) => handleChange(field.id, e.target.value)}
+            onChange={(e) => handleChange(field, e.target.value)}
             className={error ? 'border-red-500' : ''}
           />
         )}
@@ -225,7 +245,7 @@ export default function RegistrationFormRenderer({
         {field.type === 'select' && (
           <Select
             value={value}
-            onValueChange={(value) => handleChange(field.id, value)}
+            onValueChange={(value) => handleChange(field, value)}
           >
             <SelectTrigger className={error ? 'border-red-500' : ''}>
               <SelectValue placeholder={field.placeholder} />
@@ -245,7 +265,7 @@ export default function RegistrationFormRenderer({
             <Checkbox
               id={fieldId}
               checked={!!value}
-              onCheckedChange={(checked) => handleChange(field.id, checked)}
+              onCheckedChange={(checked) => handleChange(field, checked)}
             />
             <label htmlFor={fieldId} className="text-sm cursor-pointer">
               {field.placeholder || 'Yes, I agree'}
