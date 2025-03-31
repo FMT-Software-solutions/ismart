@@ -39,7 +39,6 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
     setFormTitle,
     setFormDescription,
     resetFields,
-    setNextId,
     setFormBuilderActiveTab,
     saveFormSchema,
   } = useEventCreation();
@@ -99,12 +98,6 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
               JSON.stringify(formSchema.fields)
             );
             resetFields(formattedFields);
-
-            // Set next ID based on highest ID in fields + 1
-            const maxId = Math.max(
-              ...formSchema.fields.map((field: FormField) => field.id)
-            );
-            setNextId(maxId + 1);
           } else {
             resetFields([]);
           }

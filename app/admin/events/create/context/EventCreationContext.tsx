@@ -39,8 +39,6 @@ interface EventCreationContextType {
   setFormSchemaId: (id: string | null) => void;
   fields: FormField[];
   setFields: (fields: FormField[]) => void;
-  nextId: number;
-  setNextId: (id: number) => void;
   activeField: string | null;
   setActiveField: (id: string | null) => void;
   formBuilderActiveTab: string;
@@ -87,7 +85,6 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
   const [formDescription, setFormDescription] = useState('');
   const [formSchemaId, setFormSchemaId] = useState<string | null>(null);
   const [fields, setFields] = useState<FormField[]>(defaultSchemaFields);
-  const [nextId, setNextId] = useState(4);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [formBuilderActiveTab, setFormBuilderActiveTab] = useState('fields');
   const [isFormLoading, setIsFormLoading] = useState(false);
@@ -393,8 +390,7 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
     setFormSchemaId,
     fields,
     setFields,
-    nextId,
-    setNextId,
+
     activeField,
     setActiveField,
     formBuilderActiveTab,
