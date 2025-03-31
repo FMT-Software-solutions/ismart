@@ -16,13 +16,20 @@ import { User } from '@/lib/types';
 import CreateUserDialog from './CreateUserDialog';
 import EditUserDialog from './EditUserDialog';
 import DeleteUserDialog from './DeleteUserDialog';
-import { createClientSupabaseClient } from '@/lib/supabase/client';
+import { createAdminUser, deleteAdminUser, updateAdminUser } from '../actions';
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
 
 interface UsersClientProps {
   initialUsers: User[];
+  currentUser: User;
 }
 
-export default function UsersClient({ initialUsers }: UsersClientProps) {
+export default function UsersClient({
+  initialUsers,
+  currentUser,
+}: UsersClientProps) {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,8 +40,6 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const supabase = createClientSupabaseClient();
-
   // Filter users based on search term
   const filteredUsers = users.filter(
     (user) =>
@@ -42,41 +47,28 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Check if current user is super admin
+  const isSuperAdmin = currentUser.role === 'super-admin';
+
   // Dialog handlers
   const handleCreateUser = async (userData: any) => {
     try {
       setLoading(true);
+      const { data: newUser, error } = await createAdminUser({
+        ...userData,
+        role: 'admin', // Only allow creating admin users
+      });
 
-      // Create user in Supabase Auth
-      const { data: authData, error: authError } =
-        await supabase.auth.admin.createUser({
-          email: userData.email,
-          password: userData.password,
-          email_confirm: true,
-        });
-
-      if (authError) throw new Error(authError.message);
-
-      // Insert user into users table
-      const { data: newUser, error: userError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: authData.user.id,
-            email: userData.email,
-            full_name: userData.full_name,
-            role: 'admin',
-            is_first_login: true,
-          },
-        ])
-        .select()
-        .single();
-
-      if (userError) throw new Error(userError.message);
+      if (error) throw new Error(error);
 
       // Update local state
       setUsers((prev) => [...prev, newUser]);
       setCreateDialogOpen(false);
+
+      toast({
+        title: 'User added',
+        description: 'User has been successfully added',
+      });
       return {};
     } catch (err: any) {
       console.error('Error creating user:', err);
@@ -90,39 +82,18 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
     try {
       setLoading(true);
 
-      // Prepare update data
-      const updateData: any = {};
-      if (userData.full_name) updateData.full_name = userData.full_name;
-      if (typeof userData.is_first_login === 'boolean')
-        updateData.is_first_login = userData.is_first_login;
-
-      // Update user in users table
-      const { data: updatedUser, error: userError } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', userData.id)
-        .select()
-        .single();
-
-      if (userError) throw new Error(userError.message);
-
-      // If email is changing, update in auth
-      if (userData.email && userData.email !== updatedUser.email) {
-        const { error: authError } = await supabase.auth.admin.updateUserById(
-          userData.id,
-          { email: userData.email }
-        );
-
-        if (authError) throw new Error(authError.message);
-
-        // Update email in users table
-        await supabase
-          .from('users')
-          .update({ email: userData.email })
-          .eq('id', userData.id);
-
-        updatedUser.email = userData.email;
+      // Check if user has permission to edit
+      if (!isSuperAdmin && selectedUser?.role === 'super-admin') {
+        throw new Error('You do not have permission to edit super admin users');
       }
+
+      const { data: updatedUser, error } = await updateAdminUser(userData.id, {
+        full_name: userData.full_name,
+        reset_password: userData.reset_password,
+        new_password: userData.new_password,
+      });
+
+      if (error) throw new Error(error);
 
       // Update local state
       setUsers((prev) =>
@@ -130,6 +101,11 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
       );
       setEditDialogOpen(false);
       setSelectedUser(null);
+      toast({
+        title: 'User updated',
+        description: 'User details has been successfully updated',
+      });
+
       return {};
     } catch (err: any) {
       console.error('Error updating user:', err);
@@ -143,23 +119,23 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
     try {
       setLoading(true);
 
-      // Delete user from Supabase Auth
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      // Check if user has permission to delete
+      if (!isSuperAdmin) {
+        throw new Error('Only super admins can delete users');
+      }
 
-      if (authError) throw new Error(authError.message);
+      const { error } = await deleteAdminUser(userId);
 
-      // Delete from users table
-      const { error: userError } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userId);
-
-      if (userError) throw new Error(userError.message);
+      if (error) throw new Error(error);
 
       // Update local state
       setUsers((prev) => prev.filter((user) => user.id !== userId));
       setDeleteDialogOpen(false);
       setSelectedUser(null);
+      toast({
+        title: 'User deleted',
+        description: 'User has been successfully deleted',
+      });
       return {};
     } catch (err: any) {
       console.error('Error deleting user:', err);
@@ -201,7 +177,8 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>First Login</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Created At</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -213,40 +190,47 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    {user.is_first_login ? (
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
-                        Pending
-                      </span>
-                    ) : (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                        Completed
-                      </span>
-                    )}
+                    <Badge
+                      variant={
+                        user.role === 'super-admin' ? 'destructive' : 'default'
+                      }
+                    >
+                      {user.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {format(new Date(user.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setEditDialogOpen(true);
-                      }}
-                      disabled={loading}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setDeleteDialogOpen(true);
-                      }}
-                      disabled={loading}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {/* Only show edit button if user has permission */}
+                    {(isSuperAdmin || user.role !== 'super-admin') && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setEditDialogOpen(true);
+                        }}
+                        disabled={loading}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {/* Only show delete button for super admins */}
+                    {user.role !== 'super-admin' && isSuperAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setDeleteDialogOpen(true);
+                        }}
+                        disabled={loading}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -269,6 +253,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
             onOpenChange={setEditDialogOpen}
             onSubmit={handleEditUser}
             user={selectedUser}
+            currentUser={currentUser}
           />
 
           <DeleteUserDialog

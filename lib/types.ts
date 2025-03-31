@@ -2,7 +2,7 @@ export interface User {
   id: string;
   email: string;
   full_name: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'super-admin';
   is_first_login: boolean;
   created_at: string;
   updated_at: string;
@@ -16,9 +16,9 @@ export interface AdminCreateUserRequest {
 
 export interface AdminUpdateUserRequest {
   id: string;
-  email?: string;
   full_name?: string;
-  is_first_login?: boolean;
+  reset_password?: boolean;
+  new_password?: string;
 }
 
 export interface Event {

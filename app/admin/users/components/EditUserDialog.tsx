@@ -14,12 +14,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { AdminUpdateUserRequest, User } from '@/lib/types';
+import { toast } from '@/hooks/use-toast';
 
 interface EditUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (userData: AdminUpdateUserRequest) => Promise<{ error?: string }>;
   user: User;
+  currentUser: User;
 }
 
 export default function EditUserDialog({
@@ -27,33 +29,33 @@ export default function EditUserDialog({
   onOpenChange,
   onSubmit,
   user,
+  currentUser,
 }: EditUserDialogProps) {
   const [formData, setFormData] = useState<AdminUpdateUserRequest>({
     id: user.id,
-    email: user.email,
     full_name: user.full_name,
-    is_first_login: user.is_first_login,
   });
+  const [resetPassword, setResetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Check if current user is super admin
+  const isSuperAdmin = currentUser.role === 'super-admin';
 
   // Reset form data when user changes
   useEffect(() => {
     setFormData({
       id: user.id,
-      email: user.email,
       full_name: user.full_name,
-      is_first_login: user.is_first_login,
     });
+    setResetPassword(false);
+    setNewPassword('');
   }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSwitchChange = (checked: boolean) => {
-    setFormData((prev) => ({ ...prev, is_first_login: checked }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,12 +64,24 @@ export default function EditUserDialog({
     setLoading(true);
 
     try {
-      const result = await onSubmit(formData);
+      // Add password reset data if enabled
+      const submitData = {
+        ...formData,
+        ...(resetPassword && {
+          reset_password: true,
+          new_password: newPassword || undefined, // Only include if provided
+        }),
+      };
+
+      const result = await onSubmit(submitData);
 
       if (result?.error) {
         setError(result.error);
         return;
       }
+
+      // Close dialog on success
+      onOpenChange(false);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
@@ -110,24 +124,48 @@ export default function EditUserDialog({
                 id="email"
                 name="email"
                 type="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
+                value={user.email}
+                className="bg-gray-50 dark:bg-gray-800"
+                disabled
               />
+              <p className="text-xs text-gray-500">
+                Email cannot be changed for security reasons.
+              </p>
             </div>
 
-            <div className="flex items-center justify-between">
-              <Label htmlFor="first_login">Require Password Reset</Label>
-              <Switch
-                id="first_login"
-                checked={formData.is_first_login}
-                onCheckedChange={handleSwitchChange}
-              />
-            </div>
-            <p className="text-xs text-gray-500">
-              When enabled, the user will be required to set a new password on
-              next login.
-            </p>
+            {isSuperAdmin && (
+              <div className="space-y-4 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="reset_password">Reset Password</Label>
+                  <Switch
+                    id="reset_password"
+                    checked={resetPassword}
+                    onCheckedChange={setResetPassword}
+                  />
+                </div>
+
+                {resetPassword && (
+                  <div className="space-y-2">
+                    <Label htmlFor="new_password">
+                      New Password (Optional)
+                    </Label>
+                    <Input
+                      id="new_password"
+                      name="new_password"
+                      type="text"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Leave blank to generate random password"
+                      className="font-mono"
+                    />
+                    <p className="text-xs text-gray-500">
+                      If left blank, a secure random password will be generated.
+                      The user will receive their new password via email.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <DialogFooter className="mt-4">

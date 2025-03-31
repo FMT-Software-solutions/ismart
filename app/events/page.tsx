@@ -2,7 +2,7 @@ import { getEvents } from '@/app/admin/events/services/events-data';
 import { EventsGrid } from './components/EventsGrid';
 
 export const metadata = {
-  title: 'Events & Trainings | iSmart NGO',
+  title: 'Events & Trainings | iSmart',
   description: 'Browse all our upcoming events and trainings',
 };
 

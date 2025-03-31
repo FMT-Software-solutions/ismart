@@ -34,6 +34,10 @@ export default async function AdminDashboard() {
     .from('events')
     .select('*', { count: 'exact', head: true });
 
+  const { count: registrationCount } = await supabase
+    .from('form_submissions')
+    .select('*', { count: 'exact', head: true });
+
   return (
     <div className="space-y-6">
       <div>

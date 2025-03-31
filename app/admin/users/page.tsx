@@ -1,15 +1,36 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import UsersClient from './components/UsersClient';
+import { redirect } from 'next/navigation';
 
 export default async function AdminUsersPage() {
   const supabase = await createServerSupabaseClient();
+
+  // Get current user
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    redirect('/admin/login');
+  }
+
+  // Get current user details
+  const { data: currentUser, error: currentUserError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
+
+  if (currentUserError) {
+    throw new Error(currentUserError.message);
+  }
 
   // Fetch admin users
   const { data: users, error } = await supabase
     .from('users')
     .select('*')
-    .eq('role', 'admin')
+    .in('role', ['admin', 'super-admin'])
     .order('created_at', { ascending: false });
 
   return (
@@ -30,7 +51,7 @@ export default async function AdminUsersPage() {
             </div>
           ) : null}
 
-          <UsersClient initialUsers={users || []} />
+          <UsersClient initialUsers={users || []} currentUser={currentUser} />
         </CardContent>
       </Card>
     </div>
