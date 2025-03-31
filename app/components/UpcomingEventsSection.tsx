@@ -107,7 +107,7 @@ export function UpcomingEventsSection({ events }: UpcomingEventsSectionProps) {
                         <Link href={`/events/${event.id}`}>{event.title}</Link>
                       </CardTitle>
                       <CardDescription className="line-clamp-2">
-                        {event.theme || event.description}
+                        {event.theme}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>

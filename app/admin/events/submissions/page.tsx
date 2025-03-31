@@ -4,15 +4,15 @@ import { SubmissionsClient } from './components/submissions-client';
 import { Suspense } from 'react';
 
 interface SubmissionsPageProps {
-  searchParams: {
+  searchParams: Promise<{
     eventId?: string;
-  };
+  }>;
 }
 
 export default async function SubmissionsPage({
   searchParams,
 }: SubmissionsPageProps) {
-  const { eventId } = searchParams;
+  const { eventId } = await searchParams;
 
   // Get submissions with filters - only filter by eventId on the server
   // If eventId is 'all-events' or undefined, fetch all submissions

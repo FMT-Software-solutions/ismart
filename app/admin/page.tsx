@@ -27,8 +27,7 @@ export default async function AdminDashboard() {
   // Get counts for dashboard
   const { count: userCount } = await supabase
     .from('users')
-    .select('*', { count: 'exact', head: true })
-    .eq('role', 'admin');
+    .select('*', { count: 'exact', head: true });
 
   const { count: eventCount } = await supabase
     .from('events')

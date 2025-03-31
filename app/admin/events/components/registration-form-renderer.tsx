@@ -23,55 +23,48 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import { FormSchema, FormField } from '../models/form-schema';
-import { getEventFormSchema } from '../services/form-schema-service';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface RegistrationFormRendererProps {
-  eventId: string;
+  eventId?: string;
+  formSchema?: FormSchema | null;
   onSubmit?: (data: Record<string, any>) => Promise<void>;
+  isPreview?: boolean;
 }
 
 export default function RegistrationFormRenderer({
   eventId,
+  formSchema: initialFormSchema,
   onSubmit,
+  isPreview = false,
 }: RegistrationFormRendererProps) {
-  const router = useRouter();
   const { toast } = useToast();
-  const [formSchema, setFormSchema] = useState<FormSchema | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [formSchema, setFormSchema] = useState<FormSchema | null>(
+    initialFormSchema || null
+  );
+  const [isLoading, setIsLoading] = useState(!initialFormSchema && !!eventId);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [visibleFields, setVisibleFields] = useState<string[]>([]);
 
   // Create a mapping between field IDs and labels
   const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const loadFormSchema = async () => {
+      if (!eventId || initialFormSchema) return;
+
       try {
         setIsLoading(true);
-        const schema = await getEventFormSchema(eventId);
+        // This would be your API call to get the schema
+        // const schema = await getEventFormSchema(eventId);
+        const schema: FormSchema | null = null; // Replace with actual API call
 
         if (schema) {
-          const formattedSchema = {
-            ...schema,
-            description: schema.description || undefined,
-          };
-          setFormSchema(formattedSchema);
-
-          // Initialize form data with empty values using unique field IDs
-          const initialData: Record<string, any> = {};
-          const mapping: Record<string, string> = {};
-
-          schema.fields.forEach((field) => {
-            const fieldId = `field_${field.id}`;
-            initialData[fieldId] = '';
-            mapping[fieldId] = field.label;
-          });
-
-          setFormData(initialData);
-          setFieldMapping(mapping);
+          setFormSchema(schema);
+          initializeFormData(schema);
         } else {
           setFormSchema(null);
         }
@@ -88,14 +81,62 @@ export default function RegistrationFormRenderer({
     };
 
     loadFormSchema();
-  }, [eventId, toast]);
+  }, [eventId, initialFormSchema, toast]);
+
+  useEffect(() => {
+    if (initialFormSchema) {
+      setFormSchema(initialFormSchema);
+      initializeFormData(initialFormSchema);
+    }
+  }, [initialFormSchema]);
+
+  const initializeFormData = (schema: FormSchema) => {
+    const initialData: Record<string, any> = {};
+    const mapping: Record<string, string> = {};
+
+    schema.fields.forEach((field) => {
+      const fieldId = `field_${field.id}`;
+      initialData[fieldId] = '';
+      mapping[fieldId] = field.label;
+    });
+
+    setFormData(initialData);
+    setFieldMapping(mapping);
+    updateVisibleFields(initialData, schema.fields);
+  };
+
+  const updateVisibleFields = (
+    currentFormData: Record<string, any>,
+    fields: FormField[]
+  ) => {
+    const visible = fields
+      .filter((field) => {
+        if (!field.conditions || field.conditions.length === 0) return true;
+
+        return field.conditions.some((condition) => {
+          const dependentFieldId = `field_${condition.fieldId}`;
+          const dependentValue = currentFormData[dependentFieldId];
+          return condition.value === dependentValue;
+        });
+      })
+      .map((field) => `field_${field.id}`);
+
+    setVisibleFields(visible);
+  };
 
   const handleChange = (field: FormField, value: any) => {
     const fieldId = `field_${field.id}`;
-    setFormData({
+    const newFormData = {
       ...formData,
       [fieldId]: value,
-    });
+    };
+
+    setFormData(newFormData);
+
+    // Update visible fields based on new value
+    if (formSchema) {
+      updateVisibleFields(newFormData, formSchema.fields);
+    }
 
     // Clear error when field is updated
     if (errors[fieldId]) {
@@ -113,6 +154,10 @@ export default function RegistrationFormRenderer({
 
     formSchema.fields.forEach((field) => {
       const fieldId = `field_${field.id}`;
+
+      // Skip validation for hidden fields
+      if (!visibleFields.includes(fieldId)) return;
+
       const value = formData[fieldId];
 
       if (field.required) {
@@ -122,7 +167,6 @@ export default function RegistrationFormRenderer({
         }
       }
 
-      // Add more validations based on field type if needed
       if (field.type === 'email' && value) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) {
@@ -132,7 +176,6 @@ export default function RegistrationFormRenderer({
       }
 
       if (field.type === 'phone' && value) {
-        // Basic phone validation - this can be improved
         const phoneRegex = /^[0-9+\s()-]{7,15}$/;
         if (!phoneRegex.test(value)) {
           newErrors[fieldId] = 'Please enter a valid phone number';
@@ -156,9 +199,12 @@ export default function RegistrationFormRenderer({
       // Transform the form data to use labels as keys for submission
       const labelBasedData = Object.entries(formData).reduce(
         (acc, [fieldId, value]) => {
-          const label = fieldMapping[fieldId];
-          if (label) {
-            acc[label] = value;
+          // Only include visible fields
+          if (visibleFields.includes(fieldId)) {
+            const label = fieldMapping[fieldId];
+            if (label) {
+              acc[label] = value;
+            }
           }
           return acc;
         },
@@ -167,8 +213,8 @@ export default function RegistrationFormRenderer({
 
       // Format the submission data using labels
       const submissionData = {
-        event_id: eventId,
-        form_schema_id: formSchema?.id,
+        ...(eventId && { event_id: eventId }),
+        ...(formSchema?.id && { form_schema_id: formSchema.id }),
         responses: labelBasedData,
       };
 
@@ -189,6 +235,10 @@ export default function RegistrationFormRenderer({
 
   const renderField = (field: FormField) => {
     const fieldId = `field_${field.id}`;
+
+    // Don't render if field should be hidden
+    if (!visibleFields.includes(fieldId)) return null;
+
     const value = formData[fieldId] || '';
     const error = errors[fieldId];
 
@@ -277,6 +327,19 @@ export default function RegistrationFormRenderer({
     );
   };
 
+  const formContent = formSchema ? (
+    <div className="space-y-6">
+      {formSchema.fields.map((field) => renderField(field))}
+      {!isPreview && (
+        <div className="flex justify-end pt-6">
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Submitting...' : 'Submit Registration'}
+          </Button>
+        </div>
+      )}
+    </div>
+  ) : null;
+
   if (isLoading) {
     return <div className="flex justify-center py-8">Loading form...</div>;
   }
@@ -292,6 +355,18 @@ export default function RegistrationFormRenderer({
     );
   }
 
+  if (isPreview) {
+    return (
+      <div className="space-y-6">
+        <h3 className="text-lg font-medium">{formSchema.title}</h3>
+        {formSchema.description && (
+          <p className="text-sm text-gray-500 mb-4">{formSchema.description}</p>
+        )}
+        <form onSubmit={handleSubmit}>{formContent}</form>
+      </div>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -301,15 +376,7 @@ export default function RegistrationFormRenderer({
         )}
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {formSchema.fields.map((field) => renderField(field))}
-
-          <CardFooter className="px-0 pt-6 flex justify-end">
-            <Button type="submit" disabled={submitting}>
-              {submitting ? 'Submitting...' : 'Submit Registration'}
-            </Button>
-          </CardFooter>
-        </form>
+        <form onSubmit={handleSubmit}>{formContent}</form>
       </CardContent>
     </Card>
   );

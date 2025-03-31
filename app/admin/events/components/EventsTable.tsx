@@ -731,12 +731,12 @@ export default function EventsTable({
                           <p className="text-sm text-muted-foreground">
                             {viewEvent.isFree || viewEvent.is_free
                               ? 'Free Event'
-                              : `GHS${viewEvent.price} per person`}
+                              : `GHS ${viewEvent.price} per person`}
                           </p>
                           {(viewEvent.hasEarlyBird ||
                             viewEvent.has_early_bird) && (
                             <p className="text-sm text-muted-foreground">
-                              Early Bird: $
+                              Early Bird: GHS{' '}
                               {viewEvent.earlyBirdPrice ||
                                 viewEvent.early_bird_price}{' '}
                               (until{' '}

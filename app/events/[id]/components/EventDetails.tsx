@@ -180,7 +180,8 @@ export function EventDetails({ event }: EventDetailsProps) {
                             event.early_bird_price != null &&
                             event.early_bird_price > 0 && (
                               <Badge variant="secondary">
-                                Early Bird: ${event.early_bird_price.toFixed(2)}
+                                Early Bird: GHS{' '}
+                                {event.early_bird_price.toFixed(2)}
                               </Badge>
                             )}
                         </>

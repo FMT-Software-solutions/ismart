@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ReactNode, createContext, useContext, useState } from 'react';
 import { UseFormReturn, useForm } from 'react-hook-form';
 import { EventFormValues, eventFormSchema } from '../../models/event-schema';
-import { FormField } from '../../models/form-schema';
+import { FormField, FormFieldType } from '../../models/form-schema';
 import {
   createEvent,
   publishEvent,
@@ -41,17 +41,17 @@ interface EventCreationContextType {
   setFields: (fields: FormField[]) => void;
   nextId: number;
   setNextId: (id: number) => void;
-  activeField: number | null;
-  setActiveField: (id: number | null) => void;
+  activeField: string | null;
+  setActiveField: (id: string | null) => void;
   formBuilderActiveTab: string;
   setFormBuilderActiveTab: (tab: string) => void;
   isFormLoading: boolean;
 
   // Registration form builder methods
   moveField: (index: number, direction: 'up' | 'down') => void;
-  addField: (type: string) => void;
-  updateField: (id: number, updates: Partial<FormField>) => void;
-  deleteField: (id: number) => void;
+  addField: (type: FormFieldType) => void;
+  updateField: (id: string, updates: Partial<FormField>) => void;
+  deleteField: (id: string) => void;
   saveFormSchema: (eventId?: string) => Promise<string | null>;
 
   // Navigation
@@ -88,7 +88,7 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
   const [formSchemaId, setFormSchemaId] = useState<string | null>(null);
   const [fields, setFields] = useState<FormField[]>(defaultSchemaFields);
   const [nextId, setNextId] = useState(4);
-  const [activeField, setActiveField] = useState<number | null>(null);
+  const [activeField, setActiveField] = useState<string | null>(null);
   const [formBuilderActiveTab, setFormBuilderActiveTab] = useState('fields');
   const [isFormLoading, setIsFormLoading] = useState(false);
   // Event form state
@@ -334,77 +334,29 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
   };
 
   const moveField = (index: number, direction: 'up' | 'down') => {
-    if (
-      (direction === 'up' && index === 0) ||
-      (direction === 'down' && index === fields.length - 1)
-    ) {
-      return;
-    }
-
     const newFields = [...fields];
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     const field = newFields[index];
-
     newFields.splice(index, 1);
     newFields.splice(newIndex, 0, field);
-
     setFields(newFields);
   };
 
-  const addField = (type: string) => {
+  const addField = (type: FormFieldType) => {
     const newField: FormField = {
-      id: nextId,
-      type: type as any, // Type assertion to match the FormFieldType
-      label: getDefaultLabel(type),
-      placeholder: getDefaultPlaceholder(type),
+      id: `${Date.now()}`,
+      type,
+      label: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+      placeholder: '',
       required: false,
-      options:
-        type === 'select' ? ['Option 1', 'Option 2', 'Option 3'] : undefined,
+      ...(type === 'select' ? { options: ['Option 1'] } : {}),
     };
-
     setFields([...fields, newField]);
     setActiveField(newField.id);
     setFormBuilderActiveTab('settings');
-    setNextId(nextId + 1);
   };
 
-  const getDefaultLabel = (type: string): string => {
-    switch (type) {
-      case 'text':
-        return 'Text Field';
-      case 'email':
-        return 'Email Address';
-      case 'phone':
-        return 'Phone Number';
-      case 'select':
-        return 'Dropdown';
-      case 'checkbox':
-        return 'Checkbox';
-      case 'textarea':
-        return 'Text Area';
-      default:
-        return 'New Field';
-    }
-  };
-
-  const getDefaultPlaceholder = (type: string): string => {
-    switch (type) {
-      case 'text':
-        return 'Enter text';
-      case 'email':
-        return 'Enter email address';
-      case 'phone':
-        return 'Enter phone number';
-      case 'select':
-        return 'Select an option';
-      case 'textarea':
-        return 'Enter text here';
-      default:
-        return '';
-    }
-  };
-
-  const updateField = (id: number, updates: Partial<FormField>) => {
+  const updateField = (id: string, updates: Partial<FormField>) => {
     setFields(
       fields.map((field) =>
         field.id === id ? { ...field, ...updates } : field
@@ -412,10 +364,11 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  const deleteField = (id: number) => {
+  const deleteField = (id: string) => {
     setFields(fields.filter((field) => field.id !== id));
     if (activeField === id) {
       setActiveField(null);
+      setFormBuilderActiveTab('fields');
     }
   };
 

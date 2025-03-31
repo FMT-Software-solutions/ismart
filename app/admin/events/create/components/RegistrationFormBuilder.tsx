@@ -32,6 +32,8 @@ import {
 } from 'lucide-react';
 import { formFieldTypes } from '../../models/form-schema';
 import { useEventCreation } from '../context/EventCreationContext';
+import FieldConditionsManager from './FieldConditionsManager';
+import RegistrationFormRenderer from '../../components/registration-form-renderer';
 
 interface RegistrationFormBuilderProps {
   isEditing?: boolean;
@@ -56,6 +58,10 @@ export default function RegistrationFormBuilder({
     setFormBuilderActiveTab: setActiveTab,
     isFormLoading: isLoading,
   } = useEventCreation();
+
+  const handlePreviewSubmit = async (data: Record<string, any>) => {
+    console.log('Preview form submission:', data);
+  };
 
   return (
     <div className="space-y-6">
@@ -350,57 +356,32 @@ export default function RegistrationFormBuilder({
                           </div>
                         </div>
                       )}
+
+                      {/* Field Conditions Manager */}
+                      <div className="border-t pt-4 mt-4">
+                        <FieldConditionsManager
+                          field={fields.find((f) => f.id === activeField)!}
+                          fields={fields}
+                          onConditionsChange={(conditions) =>
+                            updateField(activeField, { conditions })
+                          }
+                        />
+                      </div>
                     </div>
                   )}
                 </TabsContent>
 
                 <TabsContent value="preview">
-                  <div className="space-y-4 rounded-md border p-4">
-                    <h3 className="text-lg font-medium">{formTitle}</h3>
-                    {formDescription && (
-                      <p className="text-sm text-gray-500 mb-4">
-                        {formDescription}
-                      </p>
-                    )}
-                    {fields.map((field) => (
-                      <div key={field.id} className="space-y-2">
-                        <Label>
-                          {field.label}
-                          {field.required && (
-                            <span className="ml-1 text-red-500">*</span>
-                          )}
-                        </Label>
-                        {field.type === 'text' ||
-                        field.type === 'email' ||
-                        field.type === 'phone' ? (
-                          <Input placeholder={field.placeholder} disabled />
-                        ) : field.type === 'textarea' ? (
-                          <textarea
-                            className="w-full rounded-md border p-2"
-                            placeholder={field.placeholder}
-                            disabled
-                          />
-                        ) : field.type === 'select' ? (
-                          <Select disabled>
-                            <SelectTrigger>
-                              <SelectValue placeholder={field.placeholder} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {field.options?.map((option, i) => (
-                                <SelectItem key={i} value={option}>
-                                  {option}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : field.type === 'checkbox' ? (
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" disabled />
-                            <span>{field.placeholder}</span>
-                          </div>
-                        ) : null}
-                      </div>
-                    ))}
+                  <div className="rounded-md border p-4">
+                    <RegistrationFormRenderer
+                      formSchema={{
+                        title: formTitle,
+                        description: formDescription,
+                        fields,
+                      }}
+                      onSubmit={handlePreviewSubmit}
+                      isPreview
+                    />
                   </div>
                 </TabsContent>
               </Tabs>

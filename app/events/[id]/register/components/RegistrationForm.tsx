@@ -4,11 +4,13 @@ import RegistrationFormRenderer from '@/app/admin/events/components/registration
 import { EventTable } from '@/app/admin/events/models/event-schema';
 import { incrementRegistrationCount } from '@/app/admin/events/services/event-service';
 import { createFormSubmission } from '@/app/admin/events/services/form-submission-service';
+import { getEventFormSchema } from '@/app/admin/events/services/form-schema-service';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { FormSchema } from '@/app/admin/events/models/form-schema';
 
 interface RegistrationFormProps {
   event: EventTable;
@@ -19,6 +21,49 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [formSchema, setFormSchema] = useState<FormSchema | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadFormSchema = async () => {
+      try {
+        setIsLoading(true);
+        if (!event.form_schema_id) {
+          setFormSchema(null);
+          return;
+        }
+
+        const fetchedSchema = await getEventFormSchema(event.id);
+        if (fetchedSchema) {
+          // Transform the schema to match the FormSchema type
+          const transformedSchema: FormSchema = {
+            id: fetchedSchema.id,
+            title: fetchedSchema.title,
+            description: fetchedSchema.description || undefined,
+            fields: fetchedSchema.fields,
+            event_id: fetchedSchema.event_id,
+            is_active: fetchedSchema.is_active,
+            created_at: fetchedSchema.created_at,
+            updated_at: fetchedSchema.updated_at,
+          };
+          setFormSchema(transformedSchema);
+        } else {
+          setFormSchema(null);
+        }
+      } catch (error) {
+        console.error('Error loading form schema:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load registration form',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFormSchema();
+  }, [event.id, event.form_schema_id, toast]);
 
   const handleFormSubmit = async (formData: Record<string, any>) => {
     try {
@@ -114,11 +159,22 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
     );
   }
 
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-primary mr-2" />
+          <span>Loading registration form...</span>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card className="p-6">
         <RegistrationFormRenderer
-          eventId={event.id}
+          formSchema={formSchema}
           onSubmit={handleFormSubmit}
         />
         {isSubmitting && (

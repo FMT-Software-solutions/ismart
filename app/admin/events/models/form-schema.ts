@@ -33,9 +33,39 @@ export const formSchemaSchema = z.object({
 });
 
 // TypeScript types
-export type FormFieldType = z.infer<typeof formFieldSchema>['type'];
-export type FormField = z.infer<typeof formFieldSchema>;
-export type FormSchema = z.infer<typeof formSchemaSchema>;
+export type FormFieldType =
+  | 'text'
+  | 'email'
+  | 'phone'
+  | 'textarea'
+  | 'select'
+  | 'checkbox';
+
+export interface FormFieldCondition {
+  fieldId: string;
+  value: string;
+}
+
+export interface FormField {
+  id: string;
+  type: FormFieldType;
+  label: string;
+  placeholder?: string;
+  required?: boolean;
+  options?: string[];
+  conditions?: FormFieldCondition[];
+}
+
+export interface FormSchema {
+  id?: string;
+  event_id?: string;
+  title: string;
+  description?: string;
+  fields: FormField[];
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
 
 // Supabase table schema
 export interface FormSchemaTable {

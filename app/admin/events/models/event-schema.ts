@@ -18,10 +18,10 @@ export const eventFormSchema = z
       .optional(),
     videoUrl: z
       .string()
-      .url({
+      .optional()
+      .refine((val) => !val || /^https?:\/\/.*/.test(val), {
         message: 'Please enter a valid URL for the video.',
-      })
-      .optional(),
+      }),
     title: z.string().min(5, {
       message: 'Event title must be at least 5 characters.',
     }),
