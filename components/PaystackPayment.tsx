@@ -21,10 +21,16 @@ interface PaystackPaymentProps {
   onSuccess: () => void;
   onClose: () => void;
   isProcessing?: boolean;
+  reference?: string;
+  buttonText?: string;
 }
 
 const getOrderId = () => {
   return `EVT_${new Date().getTime()}`;
+};
+
+const getDonationId = () => {
+  return `DON_${new Date().getTime()}`;
 };
 
 export function PaystackPayment({
@@ -34,6 +40,8 @@ export function PaystackPayment({
   onSuccess,
   onClose,
   isProcessing = false,
+  reference,
+  buttonText,
 }: PaystackPaymentProps) {
   const [publicKey, setPublicKey] = useState<string>('');
 
@@ -51,7 +59,7 @@ export function PaystackPayment({
   }, []);
 
   const config: HookConfig = {
-    reference: getOrderId(),
+    reference: reference || getOrderId(), // Use provided reference or generate default
     email,
     amount: amount * 100, // Convert to GHS to pesewas
     publicKey,
@@ -87,12 +95,10 @@ export function PaystackPayment({
     }
 
     return initializePayment({
-      onSuccess: (reference) => {
-        console.log('Payment successful:', reference);
+      onSuccess: (_reference) => {
         onSuccess();
       },
       onClose: () => {
-        console.log('Payment cancelled');
         onClose();
       },
     });
@@ -111,8 +117,11 @@ export function PaystackPayment({
           Processing Payment...
         </>
       ) : (
-        `Pay GHS ${amount.toFixed(2)}`
+        buttonText || `Pay GHS ${amount.toFixed(2)}`
       )}
     </Button>
   );
 }
+
+// Export the utility function for generating donation IDs
+export { getDonationId };

@@ -37,12 +37,13 @@ export function ExecutiveSummary() {
             <h2 className="heading-2 mb-6">Executive Summary</h2>
             <p className="paragraph mb-6">
               The Institute of Sexuality, Marriage and Family Life Research &
-              Training (iSMART) is an independent, premier Non-Governmental
-              Educational Research Institute based in Ghana. We aim to become a
-              leading centre for research and education in sexuality, marriage,
-              and family life, generating high-quality, culturally sensitive
-              research and training that informs policy, education, and social
-              development across the African continent and beyond.
+              Training (iSMART) is an Educational Research Institute based in
+              Ghana dedicated to research and training in the area of sexuality,
+              marriage and family life. We aim to become a leading centre for
+              research and education in sexuality, marriage, and family life,
+              generating high-quality, culturally sensitive research and
+              training that informs policy, education, and social development
+              across the African continent and beyond.
             </p>
             <p className="paragraph">
               Our work spans across multiple disciplines, bringing together

@@ -1,22 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { format } from 'date-fns';
+import { EventTable } from '@/app/admin/events/models/event-schema';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { format } from 'date-fns';
 import {
+  Calendar,
   CheckCircle,
   ChevronLeft,
   Home,
-  Calendar,
+  Loader2,
   MapPin,
   MessageCircle,
-  Loader2,
 } from 'lucide-react';
-import { EventTable } from '@/app/admin/events/models/event-schema';
-import { sendConfirmationEmail } from '@/app/admin/events/services/email-service';
-import { useToast } from '@/components/ui/use-toast';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 interface ConfirmationContentProps {
   event: EventTable;
@@ -24,10 +22,8 @@ interface ConfirmationContentProps {
 
 export function ConfirmationContent({ event }: ConfirmationContentProps) {
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [redirectCountdown, setRedirectCountdown] = useState(10);
+  const [redirectCountdown, setRedirectCountdown] = useState(15);
   const [showCountdown, setShowCountdown] = useState(false);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -35,13 +31,12 @@ export function ConfirmationContent({ event }: ConfirmationContentProps) {
 
     const startRedirectProcess = () => {
       if (event.whatsapp_group_url) {
-        setIsRedirecting(true);
-
-        // Wait for 2 seconds before showing the countdown
+        // Wait for 5 seconds before showing the overlay and starting countdown
         initialDelay = setTimeout(() => {
+          setIsRedirecting(true);
           setShowCountdown(true);
 
-          // Start the countdown after the delay
+          // Start the countdown
           timer = setInterval(() => {
             setRedirectCountdown((prev) => {
               if (prev <= 1) {
@@ -52,65 +47,17 @@ export function ConfirmationContent({ event }: ConfirmationContentProps) {
               return prev - 1;
             });
           }, 1000);
-        }, 2000);
+        }, 5000);
       }
     };
 
-    const init = async () => {
-      // Get registration data from session storage
-      const registrationData = sessionStorage.getItem(
-        `event_registration_${event.id}`
-      );
-
-      if (registrationData) {
-        const parsedData = JSON.parse(registrationData);
-        setIsSendingEmail(true);
-
-        try {
-          // Wait for email to be sent
-          const result = await sendConfirmationEmail({
-            event,
-            recipientEmail: parsedData.responses['Email Address'],
-            recipientName: parsedData.responses['Full Name'],
-          });
-
-          if (!result.success) {
-            throw new Error('Failed to send confirmation email');
-          }
-
-          toast({
-            title: 'Confirmation Email Sent',
-            description: 'Please check your email for event details.',
-          });
-
-          // Start redirect process after email is sent
-          startRedirectProcess();
-        } catch (error) {
-          console.error('Error sending confirmation email:', error);
-          toast({
-            title: 'Email Sending Failed',
-            description:
-              'We could not send your confirmation email. Please contact support.',
-            variant: 'destructive',
-          });
-          // Still proceed with redirect even if email fails
-          startRedirectProcess();
-        } finally {
-          setIsSendingEmail(false);
-        }
-      } else {
-        // If no registration data, still proceed with redirect
-        startRedirectProcess();
-      }
-    };
-
-    init();
+    startRedirectProcess();
 
     return () => {
       clearInterval(timer);
       clearTimeout(initialDelay);
     };
-  }, [event, toast]);
+  }, []);
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'EEEE, MMMM d, yyyy');
@@ -119,36 +66,33 @@ export function ConfirmationContent({ event }: ConfirmationContentProps) {
   return (
     <>
       {/* Loading Overlay */}
-      {(isRedirecting || isSendingEmail) && (
+      {isRedirecting && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 text-center max-w-sm mx-4">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
             <h3 className="text-lg font-semibold mb-2">
-              {isSendingEmail
-                ? 'Sending Confirmation Email...'
-                : 'Redirecting to WhatsApp Group'}
+              Redirecting to WhatsApp Group
             </h3>
-            {!isSendingEmail && (
-              <>
-                {showCountdown ? (
-                  <p className="text-muted-foreground mb-4">
-                    You will be redirected in {redirectCountdown} seconds...
-                  </p>
-                ) : (
-                  <p className="text-muted-foreground mb-4">
-                    Preparing redirect...
-                  </p>
-                )}
-                <Button
-                  className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white gap-2 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                  onClick={() =>
-                    (window.location.href = event.whatsapp_group_url!)
-                  }
-                >
-                  Join WhatsApp Group Now
-                </Button>
-              </>
-            )}
+
+            <>
+              {showCountdown ? (
+                <p className="text-muted-foreground mb-4">
+                  You will be redirected in {redirectCountdown} seconds...
+                </p>
+              ) : (
+                <p className="text-muted-foreground mb-4">
+                  Preparing redirect...
+                </p>
+              )}
+              <Button
+                className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white gap-2 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={() =>
+                  (window.location.href = event.whatsapp_group_url!)
+                }
+              >
+                Join WhatsApp Group Now
+              </Button>
+            </>
           </div>
         </div>
       )}

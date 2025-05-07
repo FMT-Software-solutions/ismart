@@ -27,6 +27,7 @@ import TextEditor from '@/components/TextEditor';
 import { Calendar, MapPin, Type } from 'lucide-react';
 import { useEventCreation } from '../context/EventCreationContext';
 import EventImagesForm from '../../components/EventImagesForm';
+import { WhatsappIcon } from '@/components/icons';
 
 export default function EventDetailsForm() {
   const { form, richTextDescription, setRichTextDescription } =
@@ -212,6 +213,21 @@ export default function EventDetailsForm() {
                 <FormMessage />
               </FormItem>
             )}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <WhatsappIcon className="mr-2 h-8 w-8" />
+            WhatsApp Link
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Input
+            placeholder="Paste event WhatsApp group link here"
+            {...form.register('whatsappLink')}
           />
         </CardContent>
       </Card>

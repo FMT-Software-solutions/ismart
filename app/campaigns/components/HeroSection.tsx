@@ -2,26 +2,19 @@
 
 import { motion } from 'framer-motion';
 
-const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6 },
-  },
-};
+interface HeroSectionProps {
+  title: string;
+  description: string;
+  fadeIn: any;
+  staggerContainer: any;
+}
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-    },
-  },
-};
-
-export function HeroSection() {
+export function HeroSection({
+  title,
+  description,
+  fadeIn,
+  staggerContainer,
+}: HeroSectionProps) {
   return (
     <section className="relative">
       <div className="hero-gradient text-white">
@@ -33,13 +26,10 @@ export function HeroSection() {
             className="max-w-3xl"
           >
             <motion.h1 variants={fadeIn} className="heading-1 mb-6">
-              About iSMART
+              {title}
             </motion.h1>
             <motion.p variants={fadeIn} className="text-xl mb-8 text-white/90">
-              The Institute of Sexuality, Marriage and Family Life Research &
-              Training (iSMART) is an Educational Research Institute based in
-              Ghana dedicated to research and training in the area of sexuality,
-              marriage and family life.
+              {description}
             </motion.p>
           </motion.div>
         </div>

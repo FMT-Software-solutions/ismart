@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { teamMembers } from './team-data';
+import { TeamMember } from './team-data';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -30,7 +30,15 @@ const staggerContainer = {
   },
 };
 
-export function Team() {
+export function Team({
+  title,
+  description,
+  teamMembers,
+}: {
+  title: string;
+  description: string;
+  teamMembers: TeamMember[];
+}) {
   return (
     <section id="team" className="section-padding bg-muted/30">
       <div className="container-custom">
@@ -42,13 +50,13 @@ export function Team() {
           className="text-center max-w-3xl mx-auto mb-16"
         >
           <motion.h2 variants={fadeIn} className="heading-2 mb-4">
-            Our Team
+            {title || 'Our Team'}
           </motion.h2>
           <motion.p
             variants={fadeIn}
             className="paragraph text-muted-foreground"
           >
-            Meet the dedicated professionals behind iSMART
+            {description || 'Meet the dedicated professionals behind iSMART'}
           </motion.p>
         </motion.div>
 

@@ -4,7 +4,7 @@ export const featureFlags = {
   research: true,
   donate: true,
   contact: true,
-  campaigns: false,
+  campaigns: true,
   media: false,
   search: false,
 };

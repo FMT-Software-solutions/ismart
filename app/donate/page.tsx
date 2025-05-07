@@ -1,36 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { motion } from 'framer-motion';
 import { BookOpen, Check, Heart, Users } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DonationForm } from './DonationForm';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -51,64 +27,7 @@ const staggerContainer = {
   },
 };
 
-const donationFormSchema = z.object({
-  amount: z.string().min(1, { message: 'Please enter a donation amount.' }),
-  firstName: z
-    .string()
-    .min(2, { message: 'First name must be at least 2 characters.' }),
-  lastName: z
-    .string()
-    .min(2, { message: 'Last name must be at least 2 characters.' }),
-  email: z.string().email({ message: 'Please enter a valid email address.' }),
-  phone: z.string().optional(),
-  paymentMethod: z.enum(['credit-card', 'bank-transfer', 'mobile-money'], {
-    required_error: 'Please select a payment method.',
-  }),
-  message: z.string().optional(),
-});
-
 export default function DonatePage() {
-  const [selectedAmount, setSelectedAmount] = useState('100');
-  const [customAmount, setCustomAmount] = useState(false);
-
-  const predefinedAmounts = ['50', '100', '250', '500', '1000'];
-
-  const form = useForm<z.infer<typeof donationFormSchema>>({
-    resolver: zodResolver(donationFormSchema),
-    defaultValues: {
-      amount: '100',
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      paymentMethod: 'credit-card',
-      message: '',
-    },
-  });
-
-  const handleAmountSelect = (amount: string) => {
-    setSelectedAmount(amount);
-    setCustomAmount(false);
-    form.setValue('amount', amount);
-  };
-
-  const handleCustomAmount = () => {
-    setSelectedAmount('');
-    setCustomAmount(true);
-    form.setValue('amount', '');
-  };
-
-  const onSubmit = (data: z.infer<typeof donationFormSchema>) => {
-    toast({
-      title: 'Donation Submitted',
-      description:
-        "Thank you for your generous support. We'll process your donation and send you a confirmation shortly.",
-    });
-    form.reset();
-    setSelectedAmount('');
-    setCustomAmount(false);
-  };
-
   return (
     <div>
       {/* Hero Section */}
@@ -240,8 +159,7 @@ export default function DonatePage() {
               <h2 className="heading-2 mb-6">Make a Donation</h2>
               <p className="paragraph mb-8">
                 Your support enables us to continue our mission of transforming
-                lives through research, education, and advocacy. All donations
-                are tax-deductible.
+                lives through research, education, and advocacy.
               </p>
 
               <div className="bg-primary/10 p-6 rounded-lg mb-8">
@@ -288,219 +206,7 @@ export default function DonatePage() {
             </motion.div>
 
             <motion.div variants={fadeIn}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Donation Form</CardTitle>
-                  <CardDescription>
-                    Please fill out the form below to make your donation
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Form {...form}>
-                    <form
-                      onSubmit={form.handleSubmit(onSubmit)}
-                      className="space-y-6"
-                    >
-                      <div className="space-y-4">
-                        <h3 className="font-medium">
-                          Select Donation Amount (GHS)
-                        </h3>
-                        <div className="grid grid-cols-3 gap-2">
-                          {predefinedAmounts.map((amount) => (
-                            <Button
-                              key={amount}
-                              type="button"
-                              variant={
-                                selectedAmount === amount
-                                  ? 'default'
-                                  : 'outline'
-                              }
-                              onClick={() => handleAmountSelect(amount)}
-                              className="h-12"
-                            >
-                              {amount}
-                            </Button>
-                          ))}
-                          <Button
-                            type="button"
-                            variant={customAmount ? 'default' : 'outline'}
-                            onClick={handleCustomAmount}
-                            className="h-12"
-                          >
-                            Custom
-                          </Button>
-                        </div>
-
-                        {customAmount && (
-                          <FormField
-                            control={form.control}
-                            name="amount"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Custom Amount (GHS)</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    placeholder="Enter amount"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="firstName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>First Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="John" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="lastName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Last Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Doe" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="email"
-                                  placeholder="john.doe@example.com"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Phone (Optional)</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="+233 XX XXX XXXX"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <FormField
-                        control={form.control}
-                        name="paymentMethod"
-                        render={({ field }) => (
-                          <FormItem className="space-y-3">
-                            <FormLabel>Payment Method</FormLabel>
-                            <FormControl>
-                              <RadioGroup
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                                className="flex flex-col space-y-1"
-                              >
-                                <FormItem className="flex items-center space-x-3 space-y-0">
-                                  <FormControl>
-                                    <RadioGroupItem value="credit-card" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    Credit/Debit Card
-                                  </FormLabel>
-                                </FormItem>
-                                <FormItem className="flex items-center space-x-3 space-y-0">
-                                  <FormControl>
-                                    <RadioGroupItem value="bank-transfer" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    Bank Transfer
-                                  </FormLabel>
-                                </FormItem>
-                                <FormItem className="flex items-center space-x-3 space-y-0">
-                                  <FormControl>
-                                    <RadioGroupItem value="mobile-money" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    Mobile Money
-                                  </FormLabel>
-                                </FormItem>
-                              </RadioGroup>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="message"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Message (Optional)</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Share why you're supporting our mission"
-                                className="resize-none"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Your message may be shared in our donor
-                              recognition materials.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* TODO: enable this back */}
-                      <Button type="submit" className="w-full" disabled>
-                        Donate Now
-                      </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-                <CardFooter className="flex justify-center border-t pt-6">
-                  <p className="text-sm text-muted-foreground">
-                    For assistance with your donation, please contact us at{' '}
-                    <a
-                      href="mailto:ismflrt.official@gmail.com"
-                      className="text-primary"
-                    >
-                      ismflrt.official@gmail.com
-                    </a>
-                  </p>
-                </CardFooter>
-              </Card>
+              <DonationForm />
             </motion.div>
           </motion.div>
         </div>
@@ -610,7 +316,7 @@ export default function DonatePage() {
             <Tabs defaultValue="general" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="general">General</TabsTrigger>
-                <TabsTrigger value="tax">Tax Information</TabsTrigger>
+                <TabsTrigger value="receipt">Receipt Information</TabsTrigger>
                 <TabsTrigger value="other">Other Ways to Give</TabsTrigger>
               </TabsList>
 
@@ -646,23 +352,13 @@ export default function DonatePage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="tax" className="mt-6 space-y-6">
-                <div>
-                  <h3 className="font-semibold mb-2">
-                    Are donations tax-deductible?
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Yes, iSMART is a registered non-profit organization, and
-                    donations are tax-deductible to the extent allowed by law.
-                  </p>
-                </div>
+              <TabsContent value="receipt" className="mt-6 space-y-6">
                 <div>
                   <h3 className="font-semibold mb-2">
                     Will I receive a receipt for my donation?
                   </h3>
                   <p className="text-muted-foreground">
-                    Yes, you will receive an official receipt for your donation
-                    that can be used for tax purposes.
+                    Yes, you will receive an official receipt for your donation.
                   </p>
                 </div>
                 <div>
@@ -749,7 +445,7 @@ export default function DonatePage() {
               <div className="flex items-center mb-6">
                 <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4">
                   <Image
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80"
+                    src="https://images.unsplash.com/photo-1573497161161-c3e73707e25c?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="Donor"
                     fill
                     style={{ objectFit: 'cover' }}
@@ -757,9 +453,7 @@ export default function DonatePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold">Grace Amoah</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Monthly Donor since 2023
-                  </p>
+                  <p className="text-sm text-muted-foreground">Monthly Donor</p>
                 </div>
               </div>
               <p className="italic">

@@ -78,7 +78,7 @@ export function PolicyPositions() {
                 </div>
                 <div>
                   <h4 className="font-semibold mb-1">
-                    Comprehensive Sexuality Education
+                    Holistic Sexuality Education
                   </h4>
                   <p className="text-muted-foreground">
                     Advocating for age-appropriate, culturally sensitive

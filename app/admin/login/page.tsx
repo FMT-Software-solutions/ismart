@@ -7,10 +7,10 @@ export default async function AdminLogin() {
 
   // Check if user is already logged in
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (session) {
+  if (user) {
     // If logged in, redirect to admin dashboard
     redirect('/admin');
   }

@@ -69,7 +69,7 @@ export default function EventCreationForm() {
           </div>
         </div>
 
-        <Card>
+        <Card className="bg-white dark:bg-gray-900">
           <CardContent className="pt-6">
             <Tabs
               value={activeTab}

@@ -12,10 +12,14 @@ import {
   Text,
 } from '@react-email/components';
 import { Tailwind } from '@react-email/tailwind';
+import { format } from 'date-fns';
 
 interface EventConfirmationEmailProps {
   eventTitle: string;
-  eventDate: string;
+  eventTheme?: string;
+  eventStartDate: string;
+  eventEndDate: string;
+  eventType: 'physical' | 'online' | 'hybrid';
   eventLocation: string;
   recipientName: string;
   whatsappGroupUrl?: string;
@@ -24,7 +28,10 @@ interface EventConfirmationEmailProps {
 
 export const EventConfirmationEmail = ({
   eventTitle,
-  eventDate,
+  eventTheme,
+  eventStartDate,
+  eventEndDate,
+  eventType,
   eventLocation,
   recipientName,
   whatsappGroupUrl,
@@ -33,6 +40,10 @@ export const EventConfirmationEmail = ({
   const previewText = requireApproval
     ? `Your registration for ${eventTitle} is pending approval`
     : `Your registration for ${eventTitle} is confirmed`;
+
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'EEEE, MMMM d, yyyy');
+  };
 
   return (
     <Html>
@@ -62,7 +73,21 @@ export const EventConfirmationEmail = ({
                 Event Details:
               </Text>
               <Text className="text-black text-[14px] leading-[24px] m-0">
-                Date: {eventDate}
+                Event: {eventTitle}
+              </Text>
+              {eventTheme && (
+                <Text className="text-black text-[14px] leading-[24px] m-0">
+                  Theme: {eventTheme}
+                </Text>
+              )}
+              <Text className="text-black text-[14px] leading-[24px] m-0">
+                Start Date: {formatDate(eventStartDate)}
+              </Text>
+              <Text className="text-black text-[14px] leading-[24px] m-0">
+                End Date: {formatDate(eventEndDate)}
+              </Text>
+              <Text className="text-black text-[14px] leading-[24px] m-0">
+                Type: {eventType.charAt(0).toUpperCase() + eventType.slice(1)}
               </Text>
               <Text className="text-black text-[14px] leading-[24px] m-0">
                 Location: {eventLocation}
@@ -86,20 +111,59 @@ export const EventConfirmationEmail = ({
 
             <Hr className="border border-solid border-[#eaeaea] my-[26px] mx-0 w-full" />
 
-            <Text className="text-[#666666] text-[12px] leading-[24px]">
-              This email was sent by iSMART NGO. If you have any questions,
-              please{' '}
-              <Link
-                href="mailto:support@theismart.org"
-                className="text-blue-600 no-underline"
-              >
-                contact our support team
+            <Text style={text}>
+              If you have any questions, please don't hesitate to contact us at{' '}
+              <Link href="mailto:ismflrt.official@gmail.com" style={link}>
+                ismflrt.official@gmail.com
               </Link>
               .
+            </Text>
+
+            <Text style={text}>
+              Regards,
+              <br />
+              The iSMART Team
+            </Text>
+
+            <Hr style={hr} />
+
+            <Text style={footer}>
+              Institute for Sex Education, Marriage and Relationship Therapy
+              (iSMART)
+              <br />
+              Accra, Ghana
+              <br />
+              <Link href="https://theismart.org" style={link}>
+                theismart.org
+              </Link>
             </Text>
           </Container>
         </Body>
       </Tailwind>
     </Html>
   );
+};
+
+const text = {
+  color: '#333',
+  fontSize: '16px',
+  lineHeight: '24px',
+  margin: '16px 0',
+};
+
+const hr = {
+  borderColor: '#e5e7eb',
+  margin: '30px 0',
+};
+
+const footer = {
+  color: '#718096',
+  fontSize: '14px',
+  lineHeight: '22px',
+  textAlign: 'center' as const,
+};
+
+const link = {
+  color: '#1d4ed8',
+  textDecoration: 'underline',
 };

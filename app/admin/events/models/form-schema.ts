@@ -8,6 +8,7 @@ export const formFieldTypes = [
   'select',
   'checkbox',
   'textarea',
+  'file',
 ] as const;
 
 // Zod schema for form fields
@@ -39,7 +40,8 @@ export type FormFieldType =
   | 'phone'
   | 'textarea'
   | 'select'
-  | 'checkbox';
+  | 'checkbox'
+  | 'file';
 
 export interface FormFieldCondition {
   fieldId: string;
@@ -51,9 +53,13 @@ export interface FormField {
   type: FormFieldType;
   label: string;
   placeholder?: string;
-  required?: boolean;
+  required: boolean;
   options?: string[];
   conditions?: FormFieldCondition[];
+  // File upload specific options
+  maxFiles?: number;
+  maxSize?: number;
+  acceptedFileTypes?: string[];
 }
 
 export interface FormSchema {

@@ -1,31 +1,40 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { format } from 'date-fns';
 import { EventConfirmationEmail } from '@/components/emails/event-confirmation-email';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   try {
-    const { event, recipientEmail, recipientName } = await request.json();
-
-    const formattedDate = format(
-      new Date(event.start_date),
-      'EEEE, MMMM d, yyyy'
-    );
+    const {
+      eventTitle,
+      eventTheme,
+      eventStartDate,
+      eventEndDate,
+      eventType,
+      eventLocation,
+      recipientEmail,
+      recipientName,
+      whatsappGroupUrl,
+      requireApproval,
+    } = await request.json();
 
     const data = await resend.emails.send({
       from: 'iSMART <event@theismart.org>',
       to: recipientEmail,
-      subject: `Registration Confirmed: ${event.title}`,
+      subject: `Registration Confirmed: ${eventTitle}`,
       react: EventConfirmationEmail({
-        eventTitle: event.title,
-        eventDate: formattedDate,
-        eventLocation: event.location,
+        eventTitle,
+        eventTheme,
+        eventStartDate,
+        eventEndDate,
+        eventType,
+        eventLocation,
         recipientName,
-        whatsappGroupUrl: event.whatsapp_group_url,
-        requireApproval: event.require_approval,
+        whatsappGroupUrl,
+        requireApproval,
       }),
+      bcc: 'ismflrt.official@gmail.com',
     });
 
     return NextResponse.json(data);

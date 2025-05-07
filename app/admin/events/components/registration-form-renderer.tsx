@@ -25,6 +25,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { FormSchema, FormField } from '../models/form-schema';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { FileUpload } from '@/components/ui/file-upload';
 
 interface RegistrationFormRendererProps {
   eventId?: string;
@@ -242,6 +243,42 @@ export default function RegistrationFormRenderer({
     const value = formData[fieldId] || '';
     const error = errors[fieldId];
 
+    // Custom rendering for file fields
+    if (field.type === 'file') {
+      return (
+        <div key={field.id} className="space-y-2">
+          <div>
+            <Label htmlFor={fieldId}>
+              {field.label}
+              {field.required && <span className="ml-1 text-red-500">*</span>}
+            </Label>
+            {field.placeholder && field.placeholder !== field.label && (
+              <p className="text-sm text-muted-foreground mt-1">
+                {field.placeholder}
+              </p>
+            )}
+          </div>
+          <FileUpload
+            bucket="registration-attachments"
+            maxFiles={field.maxFiles}
+            maxSize={field.maxSize}
+            acceptedFileTypes={field.acceptedFileTypes}
+            value={Array.isArray(value) ? value : []}
+            onUploadComplete={(urls) => handleChange(field, urls)}
+            onDelete={(url) => {
+              const currentUrls = Array.isArray(value) ? value : [];
+              handleChange(
+                field,
+                currentUrls.filter((u) => u !== url)
+              );
+            }}
+            disabled={submitting}
+          />
+          {error && <p className="text-xs text-red-500">{error}</p>}
+        </div>
+      );
+    }
+
     return (
       <div key={field.id} className="space-y-2">
         <Label htmlFor={fieldId}>
@@ -321,8 +358,6 @@ export default function RegistrationFormRenderer({
             </label>
           </div>
         )}
-
-        {error && <p className="text-xs text-red-500">{error}</p>}
       </div>
     );
   };

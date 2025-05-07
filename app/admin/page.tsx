@@ -14,14 +14,14 @@ export default async function AdminDashboard() {
 
   // Get current user
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Get user details
   const { data: userData } = await supabase
     .from('users')
     .select('*')
-    .eq('id', session?.user.id)
+    .eq('id', user?.id)
     .single();
 
   // Get counts for dashboard

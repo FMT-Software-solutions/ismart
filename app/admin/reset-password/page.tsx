@@ -7,10 +7,10 @@ export default async function ResetPassword() {
 
   // Check if user is logged in
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     // If not logged in, redirect to login
     redirect('/admin/login');
   }
@@ -19,7 +19,7 @@ export default async function ResetPassword() {
   const { data: userData } = await supabase
     .from('users')
     .select('is_first_login')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   if (!userData?.is_first_login) {
@@ -29,7 +29,7 @@ export default async function ResetPassword() {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <ResetPasswordForm userId={session.user.id} />
+      <ResetPasswordForm userId={user.id} />
     </div>
   );
 }

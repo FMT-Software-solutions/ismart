@@ -20,7 +20,6 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
   const [formSchema, setFormSchema] = useState<FormSchema | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -110,7 +109,6 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
         });
 
         // Redirect or clear form as needed
-        setIsRedirecting(true);
         router.push(`/events/${event.id}/confirmation`);
       } else {
         // For paid events, store the submission data in session storage
@@ -134,22 +132,6 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
       setIsSubmitting(false);
     }
   };
-
-  if (isRedirecting) {
-    return (
-      <Card className="p-6">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <h2 className="text-xl font-semibold">
-            Redirecting to WhatsApp Group
-          </h2>
-          <p className="text-muted-foreground">
-            Please wait while we redirect you to the event's WhatsApp group...
-          </p>
-        </div>
-      </Card>
-    );
-  }
 
   if (isLoading) {
     return (

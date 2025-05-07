@@ -65,6 +65,7 @@ export const eventFormSchema = z
     requireApproval: z.boolean().default(false),
     additionalInfo: z.string().optional(),
     formSchemaId: z.string().optional(),
+    whatsappLink: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.startDate && data.endDate && data.startDate > data.endDate) {

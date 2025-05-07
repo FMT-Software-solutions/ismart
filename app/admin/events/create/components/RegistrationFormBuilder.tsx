@@ -23,21 +23,46 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertCircle,
   Check,
+  File,
   MoveDown,
   MoveUp,
   Plus,
   SquareChevronDown,
   Trash2,
   Type,
+  X,
 } from 'lucide-react';
+import RegistrationFormRenderer from '../../components/registration-form-renderer';
 import { formFieldTypes } from '../../models/form-schema';
 import { useEventCreation } from '../context/EventCreationContext';
 import FieldConditionsManager from './FieldConditionsManager';
-import RegistrationFormRenderer from '../../components/registration-form-renderer';
 
 interface RegistrationFormBuilderProps {
   isEditing?: boolean;
 }
+
+// File type options for the multiselect
+const FILE_TYPE_OPTIONS = [
+  { value: 'application/pdf', label: 'PDF Document (.pdf)' },
+  { value: 'application/msword', label: 'Word Document (.doc)' },
+  {
+    value:
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    label: 'Word Document (.docx)',
+  },
+  { value: 'image/jpeg', label: 'JPEG Image (.jpg, .jpeg)' },
+  { value: 'image/png', label: 'PNG Image (.png)' },
+  { value: 'image/gif', label: 'GIF Image (.gif)' },
+  { value: 'image/webp', label: 'WebP Image (.webp)' },
+  { value: 'application/vnd.ms-excel', label: 'Excel Spreadsheet (.xls)' },
+  {
+    value: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    label: 'Excel Spreadsheet (.xlsx)',
+  },
+  { value: 'text/plain', label: 'Text File (.txt)' },
+  { value: 'application/zip', label: 'ZIP Archive (.zip)' },
+  { value: 'application/x-rar-compressed', label: 'RAR Archive (.rar)' },
+];
 
 export default function RegistrationFormBuilder({
   isEditing = false,
@@ -59,8 +84,8 @@ export default function RegistrationFormBuilder({
     isFormLoading: isLoading,
   } = useEventCreation();
 
-  const handlePreviewSubmit = async (data: Record<string, any>) => {
-    console.log('Preview form submission:', data);
+  const handlePreviewSubmit = async (_data: Record<string, any>) => {
+    // console.log('Preview form submission:', data);
   };
 
   return (
@@ -120,10 +145,13 @@ export default function RegistrationFormBuilder({
                           <Check className="mr-2 h-4 w-4" />
                         ) : type === 'select' ? (
                           <SquareChevronDown className="mr-2 h-4 w-4" />
+                        ) : type === 'file' ? (
+                          <File className="mr-2 h-4 w-4" />
                         ) : (
                           <Type className="mr-2 h-4 w-4" />
                         )}
-                        {type.charAt(0).toUpperCase() + type.slice(1)} Field
+                        {type.charAt(0).toUpperCase() + type.slice(1)}{' '}
+                        {type === 'file' ? 'Attachments' : 'Field'}
                       </Button>
                     ))}
                   </div>
@@ -242,17 +270,36 @@ export default function RegistrationFormBuilder({
                         <Input
                           id="field-label"
                           value={
-                            fields.find((f) => f.id === activeField)?.label ||
-                            ''
+                            fields.find((f) => f.id === activeField)?.type ===
+                            'file'
+                              ? 'Attachments'
+                              : fields.find((f) => f.id === activeField)
+                                  ?.label || ''
                           }
                           onChange={(e) =>
                             updateField(activeField, { label: e.target.value })
                           }
+                          disabled={
+                            fields.find((f) => f.id === activeField)?.type ===
+                            'file'
+                          }
                         />
+                        {fields.find((f) => f.id === activeField)?.type ===
+                          'file' && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            File upload fields always use "Attachments" as the
+                            label
+                          </p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="field-placeholder">Placeholder</Label>
+                        <Label htmlFor="field-placeholder">
+                          {fields.find((f) => f.id === activeField)?.type ===
+                          'file'
+                            ? 'Description'
+                            : 'Placeholder'}
+                        </Label>
                         <Input
                           id="field-placeholder"
                           value={
@@ -263,6 +310,12 @@ export default function RegistrationFormBuilder({
                             updateField(activeField, {
                               placeholder: e.target.value,
                             })
+                          }
+                          placeholder={
+                            fields.find((f) => f.id === activeField)?.type ===
+                            'file'
+                              ? 'Enter a description for the attachments'
+                              : 'Enter placeholder text'
                           }
                         />
                       </div>
@@ -312,7 +365,7 @@ export default function RegistrationFormBuilder({
                                     variant="ghost"
                                     size="icon"
                                     onClick={(e) => {
-                                      e.preventDefault(); // Prevent form submission
+                                      e.preventDefault();
                                       const field = fields.find(
                                         (f) => f.id === activeField
                                       );
@@ -335,7 +388,7 @@ export default function RegistrationFormBuilder({
                               variant="outline"
                               size="sm"
                               onClick={(e) => {
-                                e.preventDefault(); // Prevent form submission
+                                e.preventDefault();
                                 const field = fields.find(
                                   (f) => f.id === activeField
                                 );
@@ -353,6 +406,122 @@ export default function RegistrationFormBuilder({
                               <Plus className="mr-2 h-4 w-4" />
                               Add Option
                             </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {fields.find((f) => f.id === activeField)?.type ===
+                        'file' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label>Maximum Files</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={
+                                fields.find((f) => f.id === activeField)
+                                  ?.maxFiles || 1
+                              }
+                              onChange={(e) =>
+                                updateField(activeField, {
+                                  maxFiles: parseInt(e.target.value),
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Maximum File Size (MB)</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="5"
+                              value={
+                                (fields.find((f) => f.id === activeField)
+                                  ?.maxSize || 5 * 1024 * 1024) /
+                                (1024 * 1024)
+                              }
+                              onChange={(e) =>
+                                updateField(activeField, {
+                                  maxSize:
+                                    parseInt(e.target.value) * 1024 * 1024,
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Accepted File Types</Label>
+                            <Select
+                              value={
+                                fields.find((f) => f.id === activeField)
+                                  ?.acceptedFileTypes?.[0] || ''
+                              }
+                              onValueChange={(value) => {
+                                const field = fields.find(
+                                  (f) => f.id === activeField
+                                );
+                                const currentTypes =
+                                  field?.acceptedFileTypes || [];
+                                if (!currentTypes.includes(value)) {
+                                  updateField(activeField, {
+                                    acceptedFileTypes: [...currentTypes, value],
+                                  });
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select file types" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {FILE_TYPE_OPTIONS.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {fields
+                                .find((f) => f.id === activeField)
+                                ?.acceptedFileTypes?.map((type) => {
+                                  const option = FILE_TYPE_OPTIONS.find(
+                                    (o) => o.value === type
+                                  );
+                                  return (
+                                    <div
+                                      key={type}
+                                      className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm"
+                                    >
+                                      {option?.label}
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-4 w-4"
+                                        onClick={() => {
+                                          const field = fields.find(
+                                            (f) => f.id === activeField
+                                          );
+                                          if (field?.acceptedFileTypes) {
+                                            updateField(activeField, {
+                                              acceptedFileTypes:
+                                                field.acceptedFileTypes.filter(
+                                                  (t) => t !== type
+                                                ),
+                                            });
+                                          }
+                                        }}
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  );
+                                })}
+                            </div>
                           </div>
                         </div>
                       )}

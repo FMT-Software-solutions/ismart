@@ -110,6 +110,7 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
       hasEarlyBird: false,
       isFree: false,
       requireApproval: false,
+      whatsappLink: '',
     },
   });
 
@@ -343,10 +344,20 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
     const newField: FormField = {
       id: `${Date.now()}`,
       type,
-      label: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+      label:
+        type === 'file'
+          ? 'Attachments'
+          : `New ${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
       placeholder: '',
       required: false,
       ...(type === 'select' ? { options: ['Option 1'] } : {}),
+      ...(type === 'file'
+        ? {
+            maxFiles: 5,
+            maxSize: 5 * 1024 * 1024, // 5MB
+            acceptedFileTypes: [],
+          }
+        : {}),
     };
     setFields([...fields, newField]);
     setActiveField(newField.id);

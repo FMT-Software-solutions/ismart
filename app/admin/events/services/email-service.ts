@@ -18,9 +18,16 @@ export async function sendConfirmationEmail({
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        event,
+        eventTitle: event.title,
+        eventTheme: event.theme,
+        eventStartDate: event.start_date,
+        eventEndDate: event.end_date,
+        eventType: event.event_type,
+        eventLocation: event.location,
         recipientEmail,
         recipientName,
+        whatsappGroupUrl: event.whatsapp_group_url,
+        requireApproval: event.require_approval,
       }),
     });
 

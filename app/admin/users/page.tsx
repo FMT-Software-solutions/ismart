@@ -8,10 +8,10 @@ export default async function AdminUsersPage() {
 
   // Get current user
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     redirect('/admin/login');
   }
 
@@ -19,7 +19,7 @@ export default async function AdminUsersPage() {
   const { data: currentUser, error: currentUserError } = await supabase
     .from('users')
     .select('*')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   if (currentUserError) {

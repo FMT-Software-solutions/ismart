@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowRight, BookOpen, Download, FileText, Users } from 'lucide-react';
+import { Team } from '@/components/team/Team';
+import { researchTeamMembers } from '@/components/team/team-data';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -36,7 +38,7 @@ const staggerContainer = {
 
 export default function ResearchPage() {
   return (
-    (<div>
+    <div>
       {/* Hero Section */}
       <section className="relative">
         <div className="hero-gradient text-white">
@@ -144,11 +146,11 @@ export default function ResearchPage() {
                     <p className="text-muted-foreground">{area.description}</p>
                   </CardContent>
                   <CardFooter>
-                    <Button variant="outline" asChild>
+                    {/* <Button variant="outline" asChild>
                       <Link href={area.link}>
                         Explore Research <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
-                    </Button>
+                    </Button> */}
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -260,7 +262,7 @@ export default function ResearchPage() {
         </div>
       </section>
       {/* Publications Section */}
-      <section className="section-padding">
+      {/* <section className="section-padding">
         <div className="container-custom">
           <motion.div
             initial="hidden"
@@ -463,107 +465,13 @@ export default function ResearchPage() {
             </motion.div>
           </motion.div>
         </div>
-      </section>
+      </section> */}
       {/* Research Team Section */}
-      <section className="section-padding bg-muted/30">
-        <div className="container-custom">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-100px' }}
-            variants={staggerContainer}
-            className="text-center max-w-3xl mx-auto mb-16"
-          >
-            <motion.h2 variants={fadeIn} className="heading-2 mb-4">
-              Our Research Team
-            </motion.h2>
-            <motion.p
-              variants={fadeIn}
-              className="paragraph text-muted-foreground"
-            >
-              Meet the dedicated researchers behind our work
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-100px' }}
-            variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          >
-            {[
-              {
-                name: 'Dr. Sarah Mensah',
-                role: 'Research Director',
-                bio: 'Dr. Mensah leads our research initiatives with expertise in family dynamics and sexuality studies.',
-                image:
-                  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=688&q=80',
-              },
-              {
-                name: 'Prof. James Osei',
-                role: 'Senior Researcher',
-                bio: 'Prof. Osei specializes in cultural studies and their impact on marriage and family life.',
-                image:
-                  'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80',
-              },
-              {
-                name: 'Dr. Grace Addo',
-                role: 'Research Fellow',
-                bio: 'Dr. Addo focuses on relationship education and marriage counseling research.',
-                image:
-                  'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=761&q=80',
-              },
-              {
-                name: 'Mr. Daniel Kwame',
-                role: 'Research Associate',
-                bio: 'Mr. Kwame specializes in policy research and community-based participatory research methods.',
-                image:
-                  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80',
-              },
-              {
-                name: 'Dr. Emmanuel Boateng',
-                role: 'Research Fellow',
-                bio: 'Dr. Boateng leads our sexuality education research with a focus on curriculum development.',
-                image:
-                  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
-              },
-              {
-                name: 'Ms. Abena Owusu',
-                role: 'Research Assistant',
-                bio: 'Ms. Owusu specializes in qualitative research methods and data analysis.',
-                image:
-                  'https://images.unsplash.com/photo-1598550874175-4d0ef436c909?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80',
-              },
-            ].map((researcher, index) => (
-              <motion.div
-                key={index}
-                variants={fadeIn}
-                whileHover={{ y: -5 }}
-                className="card-hover"
-              >
-                <Card className="overflow-hidden h-full">
-                  <div className="relative h-64">
-                    <Image
-                      src={researcher.image}
-                      alt={researcher.name}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                    />
-                  </div>
-                  <CardHeader>
-                    <CardTitle>{researcher.name}</CardTitle>
-                    <CardDescription>{researcher.role}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{researcher.bio}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+      <Team
+        teamMembers={researchTeamMembers}
+        title="Our Research Team"
+        description="Meet the dedicated professionals behind iSMART's research efforts"
+      />
       {/* Research Partnerships Section */}
       <section className="section-padding">
         <div className="container-custom">
@@ -649,6 +557,6 @@ export default function ResearchPage() {
           </motion.div>
         </div>
       </section>
-    </div>)
+    </div>
   );
 }

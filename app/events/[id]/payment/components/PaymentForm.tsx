@@ -9,7 +9,8 @@ import { EventTable } from '@/app/admin/events/models/event-schema';
 import { format } from 'date-fns';
 import { createFormSubmission } from '@/app/admin/events/services/form-submission-service';
 import { incrementRegistrationCount } from '@/app/admin/events/services/event-service';
-import { PaystackPayment } from './PaystackPayment';
+import { PaystackPayment } from '@/components/PaystackPayment';
+import { sendConfirmationEmail } from '@/app/admin/events/services/email-service';
 
 interface PaymentFormProps {
   event: EventTable;
@@ -41,6 +42,22 @@ export function PaymentForm({ event }: PaymentFormProps) {
     try {
       // Create form submission after successful payment
       await createFormSubmission(registrationData);
+
+      // Wait for email to be sent
+      const result = await sendConfirmationEmail({
+        event,
+        recipientEmail: registrationData.responses['Email Address'],
+        recipientName: registrationData.responses['Full Name'],
+      });
+
+      if (!result.success) {
+        throw new Error('Failed to send confirmation email');
+      }
+
+      toast({
+        title: 'Confirmation Email Sent',
+        description: 'Please check your email for event details.',
+      });
 
       // Increment registration count
       const { error: countError } = await incrementRegistrationCount(event.id);
@@ -84,8 +101,6 @@ export function PaymentForm({ event }: PaymentFormProps) {
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'MMMM d, yyyy');
   };
-
-  console.log(registrationData);
 
   // Show loading state while checking registration data
   if (!registrationData) {

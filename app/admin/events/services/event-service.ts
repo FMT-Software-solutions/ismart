@@ -36,6 +36,7 @@ export async function createEvent(
       registrations_count: 0,
       gallery_images: data.galleryImages || [],
       video_url: data.videoUrl || null,
+      whatsapp_group_url: data.whatsappLink || null,
     };
 
     const { data: event, error } = await supabase
@@ -133,6 +134,9 @@ export async function updateEvent(
     }
     if (data.formSchemaId !== undefined) {
       updateData.form_schema_id = data.formSchemaId || null;
+    }
+    if (data.whatsappLink !== undefined) {
+      updateData.whatsapp_group_url = data.whatsappLink || null;
     }
 
     // Add updated_at timestamp
