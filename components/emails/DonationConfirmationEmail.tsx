@@ -40,10 +40,10 @@ export const DonationConfirmationEmail = ({
           <Text style={text}>Dear {firstName},</Text>
 
           <Text style={text}>
-            Thank you for your generous donation to the Institute for Sex
-            Education, Marriage and Relationship Therapy (iSMART). Your support
-            helps us continue our mission to transform society's understanding
-            and practice of sexuality, marriage, and family life.
+            Thank you for your generous donation to the Institute of Sexuality,
+            Marriage and Family Life Research and Training (iSMART). Your
+            support helps us continue our mission to transform society's
+            understanding and practice of sexuality, marriage, and family life.
           </Text>
 
           <Section style={donationDetails}>

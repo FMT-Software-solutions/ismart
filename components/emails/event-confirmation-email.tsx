@@ -138,8 +138,8 @@ export const EventConfirmationEmail = ({
             <Hr style={hr} />
 
             <Text style={footer}>
-              Institute for Sex Education, Marriage and Relationship Therapy
-              (iSMART)
+              Institute of Sexuality, Marriage and Family Life Research and
+              Training (iSMART)
               <br />
               Accra, Ghana
               <br />
