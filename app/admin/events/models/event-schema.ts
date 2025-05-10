@@ -123,6 +123,7 @@ export interface EventTable {
   location: string;
   event_type: 'physical' | 'online' | 'hybrid';
   event_link: string | null;
+  eventLink: string | null;
   price: number;
   has_early_bird: boolean;
   early_bird_price: number | null;
@@ -139,6 +140,7 @@ export interface EventTable {
   registrations_count: number;
   is_active?: boolean;
   whatsapp_group_url: string | null;
+  whatsappGroupUrl?: string | null;
 }
 
 // Interface for form schema

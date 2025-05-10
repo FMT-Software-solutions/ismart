@@ -1,5 +1,3 @@
-import { Database } from '@/lib/database.types';
-
 export type FormSubmissionStatus = 'pending' | 'approved' | 'rejected';
 
 export interface FormSubmissionTable {

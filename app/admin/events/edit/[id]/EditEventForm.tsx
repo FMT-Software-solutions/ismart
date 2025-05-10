@@ -83,6 +83,7 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
           formSchemaId: event.form_schema_id || '',
           galleryImages: event.gallery_images || [],
           videoUrl: event.video_url || '',
+          whatsappLink: event.whatsapp_group_url || '',
         });
 
         // Load form schema if it exists in the event data
