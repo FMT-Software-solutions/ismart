@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormSchema } from '@/app/admin/events/models/form-schema';
+import { sendConfirmationEmail } from '@/app/admin/events/services/email-service';
 
 interface RegistrationFormProps {
   event: EventTable;
@@ -100,6 +101,17 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
         if (countError) {
           console.error('Error updating registration count:', countError);
           // Don't return here, as the registration itself was successful
+        }
+
+        // Wait for email to be sent
+        const result = await sendConfirmationEmail({
+          event,
+          recipientEmail: submissionData.responses['Email Address'],
+          recipientName: submissionData.responses['Full Name'],
+        });
+
+        if (!result.success) {
+          throw new Error('Failed to send confirmation email');
         }
 
         // Show success message
