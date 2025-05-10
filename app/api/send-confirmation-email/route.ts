@@ -36,7 +36,6 @@ export async function POST(request: Request) {
         whatsappGroupUrl,
         requireApproval,
       }),
-      bcc: 'ismflrt.official@gmail.com',
     });
 
     return NextResponse.json(data);
