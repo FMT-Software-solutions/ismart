@@ -21,6 +21,7 @@ interface EventConfirmationEmailProps {
   eventEndDate: string;
   eventType: 'physical' | 'online' | 'hybrid';
   eventLocation: string;
+  eventLink: string;
   recipientName: string;
   whatsappGroupUrl?: string;
   requireApproval?: boolean;
@@ -33,6 +34,7 @@ export const EventConfirmationEmail = ({
   eventEndDate,
   eventType,
   eventLocation,
+  eventLink,
   recipientName,
   whatsappGroupUrl,
   requireApproval,
@@ -92,9 +94,17 @@ export const EventConfirmationEmail = ({
               <Text className="text-black text-[14px] leading-[24px] m-0">
                 Location: {eventLocation}
               </Text>
+              {eventLink && (
+                <Text className="text-black text-[14px] leading-[24px] m-0">
+                  Link:{' '}
+                  <Link href={eventLink} style={link}>
+                    {eventLink}
+                  </Link>
+                </Text>
+              )}
             </Section>
 
-            {whatsappGroupUrl && !requireApproval && (
+            {whatsappGroupUrl && (
               <>
                 <Text className="text-black text-[14px] leading-[24px]">
                   Join our WhatsApp group to connect with other participants and

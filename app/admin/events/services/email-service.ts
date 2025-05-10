@@ -24,6 +24,7 @@ export async function sendConfirmationEmail({
         eventEndDate: event.end_date,
         eventType: event.event_type,
         eventLocation: event.location,
+        eventLink: event.event_link,
         recipientEmail,
         recipientName,
         whatsappGroupUrl: event.whatsapp_group_url,
