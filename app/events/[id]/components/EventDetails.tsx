@@ -40,7 +40,12 @@ export function EventDetails({ event }: EventDetailsProps) {
   return (
     <div className="container mx-auto py-8 px-4">
       {/* Banner Image */}
-      <div className="relative h-[400px] w-full rounded-lg overflow-hidden mb-8">
+      <div
+        className="relative h-[400px] w-full rounded-lg overflow-hidden mb-8 cursor-pointer"
+        onClick={() => {
+          setPreviewImage(event.banner_image_url || '');
+        }}
+      >
         <Image
           src={event.banner_image_url || '/placeholder-event.jpg'}
           alt={event.title}
@@ -118,7 +123,7 @@ export function EventDetails({ event }: EventDetailsProps) {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-10">
           <Card>
             <CardHeader>
               <CardTitle>Event Details</CardTitle>
@@ -237,6 +242,20 @@ export function EventDetails({ event }: EventDetailsProps) {
               </div>
             </CardContent>
           </Card>
+          <div
+            className="relative h-[450px] w-full rounded-lg overflow-hidden cursor-pointer"
+            onClick={() => {
+              setPreviewImage(event.banner_image_url || '');
+            }}
+          >
+            <Image
+              src={event.banner_image_url || '/placeholder-event.jpg'}
+              alt={event.title}
+              fill
+              style={{ objectFit: 'contain' }}
+              priority
+            />
+          </div>
         </div>
       </div>
 
