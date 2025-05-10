@@ -68,6 +68,7 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
           endDate: new Date(event.end_date),
           location: event.location,
           eventType: event.event_type,
+          eventLink: event.event_link || '',
           price: event.price,
           hasEarlyBird: event.has_early_bird,
           earlyBirdPrice: event.early_bird_price || undefined,

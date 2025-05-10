@@ -28,6 +28,9 @@ import {
   MoreHorizontal,
   Image as ImageIcon,
   Video as VideoIcon,
+  LinkIcon,
+  CalendarDays,
+  CalendarClock,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,7 +70,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { usePathname, useRouter } from 'next/navigation';
 import ImagePreviewModal from './ImagePreviewModal';
-import { getVideoEmbedUrl } from '@/lib/utils';
+import { cn, getVideoEmbedUrl } from '@/lib/utils';
+import { WhatsappIcon } from '@/components/icons';
 
 interface EventsTableProps {
   events: Event[];
@@ -196,6 +200,7 @@ export default function EventsTable({
         ...event,
         gallery_images: event.gallery_images || undefined,
       };
+      console.log(processedEvent);
       setViewEvent(processedEvent);
       setViewModalOpen(true);
     } catch (error: any) {
@@ -224,10 +229,14 @@ export default function EventsTable({
   );
 
   // Format date for display
-  const formatDate = (dateString: string | null | undefined) => {
+  const formatDate = (
+    dateString: string | null | undefined,
+    includeTime: boolean = false
+  ) => {
     if (!dateString) return 'N/A';
     try {
-      return format(new Date(dateString), 'MMM d, yyyy');
+      const formatString = includeTime ? 'MMM d, yyyy h:mm a' : 'MMM d, yyyy';
+      return format(new Date(dateString), formatString);
     } catch (e) {
       return 'Invalid date';
     }
@@ -662,28 +671,22 @@ export default function EventsTable({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-gray-500" />
+                        <CalendarClock className="h-5 w-5 text-gray-500" />
                         <div>
-                          <p className="font-medium">Date</p>
+                          <p className="font-medium">Date & Time</p>
                           <p className="text-sm text-muted-foreground">
-                            {formatDate(
-                              viewEvent.startDate || viewEvent.start_date
-                            )}
-                            {(viewEvent.endDate || viewEvent.end_date) &&
-                              (viewEvent.startDate || viewEvent.start_date) !==
-                                (viewEvent.endDate || viewEvent.end_date) &&
-                              ` - ${formatDate(
-                                viewEvent.endDate || viewEvent.end_date
-                              )}`}
+                            <span className="font-bold text-gray-700">
+                              From:{' '}
+                            </span>
+                            {formatDate(viewEvent.start_date, true)}
+                            <br />
+                            <span className="font-bold text-gray-700">
+                              To:{' '}
+                            </span>
+                            {viewEvent.end_date &&
+                              viewEvent.start_date !== viewEvent.end_date &&
+                              formatDate(viewEvent.end_date, true)}
                           </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-5 w-5 text-gray-500" />
-                        <div>
-                          <p className="font-medium">Time</p>
-                          <p className="text-sm text-muted-foreground">N/A</p>
                         </div>
                       </div>
 
@@ -694,6 +697,45 @@ export default function EventsTable({
                           <p className="text-sm text-muted-foreground">
                             {viewEvent.location || 'N/A'}
                           </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <LinkIcon className="h-5 w-5 text-gray-500" />
+                        <div>
+                          <p className="font-medium">Event Link</p>
+                          <Link
+                            href={viewEvent.event_link || ''}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={cn(
+                              'text-sm',
+                              viewEvent.event_link
+                                ? 'text-blue-500 hover:text-blue-700'
+                                : 'text-gray-500'
+                            )}
+                          >
+                            {viewEvent.event_link || 'no link provided'}
+                          </Link>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <WhatsappIcon className="h-6 w-6 text-gray-500" />
+                        <div>
+                          <p className="font-medium">WhatsApp Group Link</p>
+                          <Link
+                            href={viewEvent.whatsapp_group_url || ''}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={cn(
+                              'text-sm',
+                              viewEvent.whatsapp_group_url
+                                ? 'text-blue-500 hover:text-blue-700'
+                                : 'text-gray-500'
+                            )}
+                          >
+                            {viewEvent.whatsapp_group_url || 'no link provided'}
+                          </Link>
                         </div>
                       </div>
                     </div>

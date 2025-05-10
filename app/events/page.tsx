@@ -1,6 +1,8 @@
 import { getEvents } from '@/app/admin/events/services/events-data';
 import { EventsGrid } from './components/EventsGrid';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Events & Trainings | iSmart',
   description: 'Browse all our upcoming events and trainings',
@@ -30,7 +32,11 @@ export default async function EventsPage() {
               in making a difference.
             </p>
           </div>
-          <EventsGrid initialEvents={events} />
+          <EventsGrid
+            initialEvents={events.filter(
+              (event) => event.status === 'published'
+            )}
+          />
         </div>
       </section>
     </main>

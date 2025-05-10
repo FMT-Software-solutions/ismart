@@ -42,6 +42,7 @@ import {
   Instagram,
   Linkedin,
 } from 'lucide-react';
+import { FacebookIcon, InstagramIcon, YoutubeIcon } from '@/components/icons';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -358,32 +359,38 @@ export default function ContactPage() {
                 <h3 className="text-xl font-semibold mb-4">Follow Us</h3>
                 <div className="flex space-x-4">
                   <a
-                    href="#"
+                    href="https://www.facebook.com/people/Ismart/61573042893192/"
                     className="bg-muted/50 p-3 rounded-full hover:bg-primary/10 transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    <Facebook className="h-6 w-6 text-primary" />
+                    <FacebookIcon className="h-6 w-6" />
                     <span className="sr-only">Facebook</span>
                   </a>
-                  <a
+                  {/* <a
                     href="#"
                     className="bg-muted/50 p-3 rounded-full hover:bg-primary/10 transition-colors"
                   >
                     <Twitter className="h-6 w-6 text-primary" />
                     <span className="sr-only">Twitter</span>
-                  </a>
+                  </a> */}
                   <a
-                    href="#"
+                    href="https://www.instagram.com/ismart_1024/"
                     className="bg-muted/50 p-3 rounded-full hover:bg-primary/10 transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    <Instagram className="h-6 w-6 text-primary" />
+                    <InstagramIcon className="h-6 w-6" />
                     <span className="sr-only">Instagram</span>
                   </a>
                   <a
-                    href="#"
+                    href="https://www.youtube.com/@Inst.ofSexualityMarriageResear"
                     className="bg-muted/50 p-3 rounded-full hover:bg-primary/10 transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    <Linkedin className="h-6 w-6 text-primary" />
-                    <span className="sr-only">LinkedIn</span>
+                    <YoutubeIcon className="h-6 w-6" />
+                    <span className="sr-only">Youtube</span>
                   </a>
                 </div>
               </div>
@@ -426,9 +433,12 @@ export default function ContactPage() {
             variants={fadeIn}
             className="text-center mb-8"
           >
-            <h2 className="heading-2 mb-4">Find Us</h2>
+            <div className="flex items-center justify-center gap-4">
+              <MapPin className="h-12 w-12 text-primary mb-4" />
+              <h2 className="heading-2 mb-4">Find Us</h2>
+            </div>
             <p className="paragraph text-muted-foreground max-w-3xl mx-auto">
-              Our office is located in the heart of Accra, Ghana
+              We are located in the heart of Accra, Ghana
             </p>
           </motion.div>
 
@@ -439,12 +449,16 @@ export default function ContactPage() {
             variants={fadeIn}
             className="bg-muted h-[400px] rounded-lg flex items-center justify-center"
           >
-            <div className="text-center">
-              <MapPin className="h-12 w-12 text-muted-foreground mb-4 mx-auto" />
-              <p className="text-muted-foreground">
-                Map placeholder - In a real implementation, this would be an
-                interactive map
-              </p>
+            <div className="text-center w-full h-full rounded-lg overflow-hidden">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127066.75857679047!2d-0.17972944999999999!3d5.5912087!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf9084b2b7a773%3A0xbed14ed8650e2dd3!2sAccra!5e0!3m2!1sen!2sgh!4v1746872238331!5m2!1sen!2sgh"
+                width="100%"
+                height="400"
+                style={{ border: '0' }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
             </div>
           </motion.div>
         </div>

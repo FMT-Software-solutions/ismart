@@ -1,7 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { EventFormValues, EventTable } from '../models/event-schema';
-import { FormSchemaTable } from '../models/form-schema';
 
 // Create a new event
 export async function createEvent(
@@ -37,6 +35,7 @@ export async function createEvent(
       gallery_images: data.galleryImages || [],
       video_url: data.videoUrl || null,
       whatsapp_group_url: data.whatsappLink || null,
+      event_link: data.eventLink || null,
     };
 
     const { data: event, error } = await supabase
@@ -137,6 +136,9 @@ export async function updateEvent(
     }
     if (data.whatsappLink !== undefined) {
       updateData.whatsapp_group_url = data.whatsappLink || null;
+    }
+    if (data.eventLink !== undefined) {
+      updateData.event_link = data.eventLink || null;
     }
 
     // Add updated_at timestamp

@@ -10,7 +10,7 @@ export default async function EventPage({
   const { id } = await params;
   const { event, error } = await getEventById(id);
 
-  if (error || !event) {
+  if (error || !event || event.status !== 'published') {
     notFound();
   }
 

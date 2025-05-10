@@ -11,10 +11,12 @@ export async function getEvents(): Promise<{
 }> {
   try {
     const supabase = createClient();
+    const now = new Date().toISOString();
 
     const { data, error } = await supabase
       .from('events')
       .select('*')
+      .gt('end_date', now) // Only get events that haven't ended yet
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -47,6 +49,8 @@ export async function getEvents(): Promise<{
       status: event.status,
       is_active: event.is_active,
       registrations_count: event.registrations_count,
+      whatsappGroupUrl: event.whatsapp_group_url,
+      eventLink: event.event_link,
     }));
 
     return { events, error: null };

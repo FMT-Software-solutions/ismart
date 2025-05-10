@@ -69,7 +69,7 @@ export function UpcomingEventsSection({ events }: UpcomingEventsSectionProps) {
               </p>
             </div>
             <Button className="mt-4 md:mt-0" asChild>
-              <Link href="/trainings">View All Events</Link>
+              <Link href="/events">View All Events</Link>
             </Button>
           </motion.div>
 

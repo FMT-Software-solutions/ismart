@@ -39,7 +39,7 @@ export const teamMembers: TeamMember[] = [
     role: 'Board Member and Research Lead.',
     bio: 'Counselling Psychologist and Senior Lecturer, University of Cape Coast',
     image:
-      'https://res.cloudinary.com/deptmmxdn/image/upload/v1746540538/WhatsApp_Image_2025-03-20_at_18.02.45_85cf9b83_edha9x.jpg',
+      'https://res.cloudinary.com/deptmmxdn/image/upload/v1746871373/doh-fia_gheddp.jpg',
   },
   {
     name: 'Francis Ohemeng Anane Esq.',
@@ -74,7 +74,7 @@ export const teamMembers: TeamMember[] = [
     role: 'Adminstrative & Finance Manager',
     bio: '',
     image:
-      'https://res.cloudinary.com/deptmmxdn/image/upload/v1746541162/1746541133689_r8sxst.jpg',
+      'https://res.cloudinary.com/deptmmxdn/image/upload/v1746871182/WhatsApp_Image_2025-05-08_at_11.27.31_840de599_zelwrx.jpg',
   },
 ];
 
@@ -84,7 +84,7 @@ export const researchTeamMembers: TeamMember[] = [
     role: 'Research Lead.',
     bio: 'Counselling Psychologist and Senior Lecturer, University of Cape Coast',
     image:
-      'https://res.cloudinary.com/deptmmxdn/image/upload/v1746540538/WhatsApp_Image_2025-03-20_at_18.02.45_85cf9b83_edha9x.jpg',
+      'https://res.cloudinary.com/deptmmxdn/image/upload/v1746871373/doh-fia_gheddp.jpg',
   },
   {
     name: 'Rev  Dr Aaron Adjei',

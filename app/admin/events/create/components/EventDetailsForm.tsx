@@ -214,6 +214,27 @@ export default function EventDetailsForm() {
               </FormItem>
             )}
           />
+
+          {(form.watch('eventType') === 'online' ||
+            form.watch('eventType') === 'hybrid') && (
+            <FormField
+              control={form.control}
+              name="eventLink"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Event Link</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter meeting link (Zoom, Google Meet, Teams, etc.)"
+                      {...field}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </CardContent>
       </Card>
 

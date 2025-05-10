@@ -106,6 +106,7 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
       description: '',
       location: '',
       eventType: 'physical',
+      eventLink: '',
       price: 0,
       hasEarlyBird: false,
       isFree: false,

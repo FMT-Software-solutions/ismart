@@ -41,6 +41,10 @@ export const eventFormSchema = z
     eventType: z.enum(['physical', 'online', 'hybrid'], {
       required_error: 'Event type is required.',
     }),
+    eventLink: z
+      .string()
+      .url({ message: 'Please enter a valid URL for the event link.' })
+      .optional(),
     price: z.number().min(0, {
       message: 'Price cannot be negative.',
     }),
@@ -118,6 +122,7 @@ export interface EventTable {
   end_date: string; // ISO date string
   location: string;
   event_type: 'physical' | 'online' | 'hybrid';
+  event_link: string | null;
   price: number;
   has_early_bird: boolean;
   early_bird_price: number | null;
@@ -191,4 +196,7 @@ export interface Event {
   is_active?: boolean;
   registrations_count?: number;
   whatsapp_group_url?: string | null;
+  whatsappGroupUrl?: string | null;
+  event_link?: string | null;
+  eventLink?: string | null;
 }
