@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import { NextRequest, NextResponse } from 'next/server';
 import DonationConfirmationEmail from '@/components/emails/DonationConfirmationEmail';
 import { saveDonationToDatabase } from '@/lib/db/donations';
+import { recordError } from '@/app/services/error-service';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -39,6 +40,18 @@ export async function POST(request: NextRequest) {
       message: message || undefined,
       payment_status: 'completed',
     }).catch((error) => {
+      recordError(error as Error, {
+        component: 'send-donation-confirmation',
+        errorType: 'DonationError',
+        metadata: {
+          donationId,
+          firstName,
+          lastName,
+          email,
+          amount,
+        },
+      });
+
       console.error('Error saving donation to database:', error);
       return { success: false, data: null };
     });
@@ -62,6 +75,18 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Error sending donation confirmation email:', error);
+      recordError(error as Error, {
+        component: 'send-donation-confirmation',
+        errorType: 'DonationError',
+        metadata: {
+          donationId,
+          firstName,
+          lastName,
+          email,
+          amount,
+        },
+      });
+
       return NextResponse.json(
         { error: 'Failed to send donation confirmation email' },
         { status: 500 }
@@ -81,6 +106,11 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Unexpected error processing donation:', error);
+    recordError(error as Error, {
+      component: 'send-donation-confirmation',
+      errorType: 'DonationError',
+    });
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

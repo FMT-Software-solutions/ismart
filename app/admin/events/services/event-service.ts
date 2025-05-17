@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import { EventFormValues, EventTable } from '../models/event-schema';
+import { recordError } from '@/app/services/error-service';
 
 // Create a new event
 export async function createEvent(
@@ -248,7 +249,13 @@ export async function incrementRegistrationCount(eventId: string) {
 
   if (fetchError) {
     console.error('Error fetching registration count:', fetchError);
-    return { error: fetchError };
+    recordError(fetchError as Error, {
+      component: 'EventService',
+      errorType: 'RegistrationCountError',
+      metadata: {
+        eventId,
+      },
+    });
   }
 
   const currentCount = currentData?.registrations_count || 0;

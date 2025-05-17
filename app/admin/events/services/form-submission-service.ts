@@ -4,6 +4,7 @@ import {
   FormSubmissionTable,
 } from '../models/form-submission-schema';
 import * as XLSX from 'xlsx';
+import { recordError } from '@/app/services/error-service';
 
 export async function createFormSubmission(
   submission: Omit<FormSubmission, 'id' | 'created_at' | 'updated_at'>
@@ -17,6 +18,13 @@ export async function createFormSubmission(
     .single();
 
   if (error) {
+    recordError(error as Error, {
+      component: 'FormSubmissionService',
+      errorType: 'FormSubmissionError',
+      metadata: {
+        submission,
+      },
+    });
     throw new Error(`Error creating form submission: ${error.message}`);
   }
 
@@ -134,10 +142,13 @@ export async function getEventFormSubmissions(eventId: string) {
   }
 
   // Create a map for quick lookups
-  const formSchemaMap = (formSchemas || []).reduce((acc, schema) => {
-    acc[schema.id] = schema;
-    return acc;
-  }, {} as Record<string, any>);
+  const formSchemaMap = (formSchemas || []).reduce(
+    (acc, schema) => {
+      acc[schema.id] = schema;
+      return acc;
+    },
+    {} as Record<string, any>
+  );
 
   // Combine data
   const result = submissions.map((submission) => ({
@@ -196,15 +207,21 @@ export async function getUserFormSubmissions(userId: string) {
   }
 
   // Create maps for quick lookups
-  const eventMap = (events || []).reduce((acc, event) => {
-    acc[event.id] = event;
-    return acc;
-  }, {} as Record<string, any>);
+  const eventMap = (events || []).reduce(
+    (acc, event) => {
+      acc[event.id] = event;
+      return acc;
+    },
+    {} as Record<string, any>
+  );
 
-  const formSchemaMap = (formSchemas || []).reduce((acc, schema) => {
-    acc[schema.id] = schema;
-    return acc;
-  }, {} as Record<string, any>);
+  const formSchemaMap = (formSchemas || []).reduce(
+    (acc, schema) => {
+      acc[schema.id] = schema;
+      return acc;
+    },
+    {} as Record<string, any>
+  );
 
   // Combine data
   const result = submissions.map((submission) => ({
@@ -275,15 +292,21 @@ export async function getFormSubmissions(eventId?: string) {
   }
 
   // Create maps for quick lookups
-  const eventMap = (events || []).reduce((acc, event) => {
-    acc[event.id] = { title: event.title };
-    return acc;
-  }, {} as Record<string, { title: string }>);
+  const eventMap = (events || []).reduce(
+    (acc, event) => {
+      acc[event.id] = { title: event.title };
+      return acc;
+    },
+    {} as Record<string, { title: string }>
+  );
 
-  const formSchemaMap = formSchemas.reduce((acc, schema) => {
-    acc[schema.id] = { title: schema.title };
-    return acc;
-  }, {} as Record<string, { title: string }>);
+  const formSchemaMap = formSchemas.reduce(
+    (acc, schema) => {
+      acc[schema.id] = { title: schema.title };
+      return acc;
+    },
+    {} as Record<string, { title: string }>
+  );
 
   // Combine data
   const result = submissions.map((submission) => ({

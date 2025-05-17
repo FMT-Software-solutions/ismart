@@ -11,6 +11,7 @@ import { createFormSubmission } from '@/app/admin/events/services/form-submissio
 import { incrementRegistrationCount } from '@/app/admin/events/services/event-service';
 import { PaystackPayment } from '@/components/PaystackPayment';
 import { sendConfirmationEmail } from '@/app/admin/events/services/email-service';
+import { recordError } from '@/app/services/error-service';
 
 interface PaymentFormProps {
   event: EventTable;
@@ -62,7 +63,18 @@ export function PaymentForm({ event }: PaymentFormProps) {
       // Increment registration count
       const { error: countError } = await incrementRegistrationCount(event.id);
       if (countError) {
+        recordError(countError as Error, {
+          component: 'PaymentForm | RegistrationCount',
+          errorType: 'PaymentError',
+          metadata: {
+            eventId: event.id,
+            eventName: event.title,
+            registrationData: registrationData,
+          },
+        });
+
         console.error('Error updating registration count:', countError);
+        throw new Error('Error updating registration count');
       }
 
       // Clear the stored registration data
@@ -78,6 +90,16 @@ export function PaymentForm({ event }: PaymentFormProps) {
       router.push(`/events/${event.id}/confirmation`);
     } catch (error) {
       console.error('Payment error:', error);
+      recordError(error as Error, {
+        component: 'PaymentForm',
+        errorType: 'PaymentError',
+        metadata: {
+          eventId: event.id,
+          eventName: event.title,
+          registrationData: registrationData,
+        },
+      });
+
       toast({
         title: 'Payment Failed',
         description:

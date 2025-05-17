@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { EventConfirmationEmail } from '@/components/emails/event-confirmation-email';
+import { recordError } from '@/app/services/error-service';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -41,6 +42,18 @@ export async function POST(request: Request) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error sending email:', error);
+    const { eventTitle, recipientEmail, recipientName } = await request.json();
+
+    recordError(error as Error, {
+      component: 'send-confirmation-email',
+      errorType: 'EmailError',
+      metadata: {
+        eventTitle,
+        recipientEmail,
+        recipientName,
+      },
+    });
+
     return NextResponse.json(
       { error: 'Failed to send email' },
       { status: 500 }

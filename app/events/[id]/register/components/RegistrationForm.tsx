@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormSchema } from '@/app/admin/events/models/form-schema';
 import { sendConfirmationEmail } from '@/app/admin/events/services/email-service';
+import { recordError } from '@/app/services/error-service';
 
 interface RegistrationFormProps {
   event: EventTable;
@@ -134,6 +135,15 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
       }
     } catch (error) {
       console.error('Registration error:', error);
+      recordError(error as Error, {
+        component: 'RegistrationForm',
+        errorType: 'RegistrationError',
+        metadata: {
+          eventId: event.id,
+          eventName: event.title,
+          formData,
+        },
+      });
       toast({
         title: 'Registration Failed',
         description:
