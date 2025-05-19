@@ -11,10 +11,13 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, ExternalLink, FileIcon } from 'lucide-react';
+import { Download, ExternalLink, FileIcon, Loader2 } from 'lucide-react';
 import NextImage from 'next/image';
+import { PaymentDetailsSection } from './payment-details-section';
+import { ApprovalSection } from './approval-section';
+import { createClient } from '@/lib/supabase/client';
 
 interface SubmissionDetailsProps {
   submission: FormSubmissionTable | null;
@@ -32,6 +35,10 @@ export function SubmissionDetails({
   open,
   onOpenChange,
 }: SubmissionDetailsProps) {
+  const [event, setEvent] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
   // Cleanup pointer-events style when component unmounts or sheet closes
   useEffect(() => {
     if (!open) {
@@ -43,6 +50,41 @@ export function SubmissionDetails({
       document.body.style.removeProperty('pointer-events');
     };
   }, [open]);
+
+  // Fetch full event details if we have a submission with event_id
+  useEffect(() => {
+    const fetchEventDetails = async () => {
+      if (!submission || !submission.event_id) return;
+
+      try {
+        setIsLoading(true);
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', submission.event_id)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        setEvent(data);
+      } catch (error) {
+        console.error('Error fetching event details:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEventDetails();
+  }, [submission, refreshKey]);
+
+  // Handle approval completion
+  const handleApprovalComplete = () => {
+    // Refresh the component to show updated status
+    setRefreshKey((prev) => prev + 1);
+  };
 
   const renderValue = (key: string, value: any) => {
     // Handle file attachments
@@ -113,12 +155,47 @@ export function SubmissionDetails({
       );
     }
 
+    // Hide payment details keys as they will be displayed in the payment section
+    if (key === 'Transaction ID' || key === 'MoMo Account Name') {
+      return null;
+    }
+
     // Handle other values
     return (
       <p className="text-sm break-words">
         {typeof value === 'object' ? JSON.stringify(value) : String(value)}
       </p>
     );
+  };
+
+  // Extract payment_method from responses
+  const getPaymentMethod = () => {
+    if (!submission || !submission.responses) return undefined;
+
+    // Look for payment_method in responses
+    const method = submission.payment_method;
+    if (method && (method === 'manual' || method === 'online')) {
+      return method;
+    }
+
+    return undefined;
+  };
+
+  // Get payment details for manual payments
+  const getPaymentDetails = () => {
+    if (!submission || !submission.payment_details) return undefined;
+
+    const details: Record<string, any> = {};
+
+    if (submission.payment_details['transaction_id']) {
+      details['transaction_id'] = submission.payment_details['transaction_id'];
+    }
+
+    if (submission.payment_details['account_name']) {
+      details['account_name'] = submission.payment_details['account_name'];
+    }
+
+    return Object.keys(details).length > 0 ? details : undefined;
   };
 
   return (
@@ -133,9 +210,16 @@ export function SubmissionDetails({
               <SheetTitle className="text-2xl">Submission Details</SheetTitle>
               <SheetDescription>
                 Viewing details for submission from{' '}
-                {submission.event?.title || 'Unknown Event'}
+                {submission.event?.title || event?.title || 'Unknown Event'}
               </SheetDescription>
             </SheetHeader>
+
+            {isLoading && (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span className="ml-2">Loading event details...</span>
+              </div>
+            )}
 
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
@@ -144,7 +228,7 @@ export function SubmissionDetails({
                     Event
                   </p>
                   <p className="mt-1">
-                    {submission.event?.title || 'Unknown Event'}
+                    {submission.event?.title || event?.title || 'Unknown Event'}
                   </p>
                 </div>
                 <div>
@@ -184,6 +268,23 @@ export function SubmissionDetails({
 
               <Separator />
 
+              {/* Payment Details Section */}
+              <PaymentDetailsSection
+                paymentMethod={getPaymentMethod()}
+                paymentDetails={getPaymentDetails()}
+                status={submission.status}
+              />
+
+              {/* Approval Section - only shown for pending submissions */}
+              {event && (
+                <ApprovalSection
+                  submission={submission}
+                  event={event}
+                  onApprovalComplete={handleApprovalComplete}
+                />
+              )}
+
+              {/* Main Form Responses */}
               <div>
                 <h3 className="text-lg font-medium mb-4">Form Responses</h3>
                 {Object.keys(submission.responses || {}).length === 0 ? (
@@ -193,14 +294,22 @@ export function SubmissionDetails({
                 ) : (
                   <div className="space-y-3">
                     {Object.entries(submission.responses || {}).map(
-                      ([key, value]) => (
-                        <div key={key} className="grid grid-cols-2 gap-2">
-                          <p className="text-sm font-medium text-muted-foreground">
-                            {key}
-                          </p>
-                          {renderValue(key, value)}
-                        </div>
-                      )
+                      ([key, value]) => {
+                        // Skip payment_method as it's already displayed in the payment section
+                        if (key === 'payment_method') return null;
+
+                        const renderedValue = renderValue(key, value);
+                        if (renderedValue === null) return null;
+
+                        return (
+                          <div key={key} className="grid grid-cols-2 gap-2">
+                            <p className="text-sm font-medium text-muted-foreground">
+                              {key}
+                            </p>
+                            {renderedValue}
+                          </div>
+                        );
+                      }
                     )}
                   </div>
                 )}

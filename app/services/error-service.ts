@@ -1,4 +1,3 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createClient } from '@/lib/supabase/client';
 import {
   CreateErrorPayload,
@@ -25,10 +24,7 @@ export async function recordError(
   }
 ) {
   try {
-    const isServer = typeof window === 'undefined';
-    const supabase = isServer
-      ? await createServerSupabaseClient()
-      : createClient();
+    const supabase = createClient();
 
     let errorPayload: CreateErrorPayload = {
       error_message: typeof error === 'string' ? error : error.message,
@@ -81,7 +77,7 @@ export async function getErrors({
   ascending?: boolean;
 } = {}) {
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = createClient();
 
     let query = supabase.from('errors').select('*', { count: 'exact' });
 
@@ -132,7 +128,7 @@ export async function updateErrorStatus(
   isResolved?: boolean
 ) {
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = createClient();
 
     const updateData: Partial<ErrorTable> = { status };
 
@@ -168,7 +164,7 @@ export async function updateErrorStatus(
  */
 export async function deleteError(errorId: string) {
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = createClient();
 
     const { error } = await supabase.from('errors').delete().eq('id', errorId);
 

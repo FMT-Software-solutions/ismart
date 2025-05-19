@@ -15,6 +15,8 @@ export interface FormSubmissionTable {
   form_schema?: {
     title: string;
   };
+  payment_method?: string;
+  payment_details?: Record<string, any>;
 }
 
 export interface FormSubmission

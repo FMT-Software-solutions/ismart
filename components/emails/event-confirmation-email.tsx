@@ -70,36 +70,41 @@ export const EventConfirmationEmail = ({
                 : `Your registration for ${eventTitle} has been confirmed.`}
             </Text>
 
-            <Section className="bg-[#f6f6f6] rounded p-[20px] my-[16px]">
+            <Section className="bg-[#f6f6f6] rounded p-[10px] my-[16px]">
               <Text className="text-black text-[14px] leading-[24px] m-0 font-bold">
                 Event Details:
               </Text>
-              <Text className="text-black text-[14px] leading-[24px] m-0">
-                Event: {eventTitle}
+              <Text className="text-black text-[14px] m-0">
+                <span className="font-bold">Event:</span> {eventTitle}
               </Text>
               {eventTheme && (
-                <Text className="text-black text-[14px] leading-[24px] m-0">
-                  Theme: {eventTheme}
+                <Text className="text-black text-[14px] m-0">
+                  <span className="font-bold">Theme:</span> {eventTheme}
                 </Text>
               )}
-              <Text className="text-black text-[14px] leading-[24px] m-0">
-                Start Date: {formatDate(eventStartDate)}
+              <Text className="text-black text-[14px] m-0">
+                <span className="font-bold">Start Date:</span>{' '}
+                {formatDate(eventStartDate)}
               </Text>
-              <Text className="text-black text-[14px] leading-[24px] m-0">
-                End Date: {formatDate(eventEndDate)}
+              <Text className="text-black text-[14px] m-0">
+                <span className="font-bold">End Date:</span>{' '}
+                {formatDate(eventEndDate)}
               </Text>
-              <Text className="text-black text-[14px] leading-[24px] m-0">
-                Type: {eventType.charAt(0).toUpperCase() + eventType.slice(1)}
+              <Text className="text-black text-[14px] m-0">
+                <span className="font-bold">Type:</span>{' '}
+                {eventType.charAt(0).toUpperCase() + eventType.slice(1)}
               </Text>
-              <Text className="text-black text-[14px] leading-[24px] m-0">
-                Location: {eventLocation}
+              <Text className="text-black text-[14px] m-0">
+                <span className="font-bold">Location:</span> {eventLocation}
               </Text>
               {eventLink && (
-                <Text className="text-black text-[14px] leading-[24px] m-0">
-                  Link:{' '}
-                  <Link href={eventLink} style={link}>
-                    {eventLink}
-                  </Link>
+                <Text className="text-black text-[14px] m-0">
+                  <Button
+                    href={eventLink}
+                    className="bg-blue-700 rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3 my-[16px]"
+                  >
+                    Join Event
+                  </Button>
                 </Text>
               )}
             </Section>
