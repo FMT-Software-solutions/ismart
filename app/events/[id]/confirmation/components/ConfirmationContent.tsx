@@ -115,6 +115,10 @@ function ManualPaymentConfirmation({
 }) {
   return (
     <div className="max-w-lg mx-auto">
+      <h1 className="text-2xl font-bold mb-8 text-center">
+        Registration done.{' '}
+        <span className="text-amber-600">Pending Confirmation</span>
+      </h1>
       <Card className="border-gray-200 shadow-md">
         <CardContent className="pt-6 px-6 pb-8 flex flex-col items-center text-center">
           <div className="bg-amber-50 p-3 rounded-full mb-6">
@@ -237,6 +241,10 @@ function OnlinePaymentConfirmation({
           </div>
         </div>
       )}
+
+      <h1 className="text-2xl font-bold mb-8 text-center">
+        Registration Confirmed
+      </h1>
 
       <Card className="border-gray-200 shadow-md">
         <CardContent className="pt-6 px-6 pb-8 flex flex-col items-center text-center">
