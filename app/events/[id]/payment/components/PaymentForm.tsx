@@ -157,6 +157,12 @@ export function PaymentForm({ event }: PaymentFormProps) {
       await createFormSubmission({
         ...registrationData,
         status: 'pending',
+        payment_method: 'manual',
+        payment_details: {
+          transaction_id: transactionId,
+          account_name: accountName,
+          amount: currentPrice,
+        },
         responses: {
           ...registrationData.responses,
           'Transaction ID': transactionId,
