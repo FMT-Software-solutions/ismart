@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Download } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFiltersStore } from '../store/filters-store';
 import { DateRangeFilter } from './date-range-filter';
 
@@ -21,7 +21,13 @@ interface SubmissionFiltersProps {
 
 export function SubmissionFilters({ onExport }: SubmissionFiltersProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const { status, search, setStatus, setSearch } = useFiltersStore();
+  const { status, search, setStatus, setSearch, setDatePreset } =
+    useFiltersStore();
+
+  useEffect(() => {
+    // Initialize with last3days preset
+    setDatePreset('last3days');
+  }, [setDatePreset]);
 
   const handleStatusChange = (value: string) => {
     setStatus(value);

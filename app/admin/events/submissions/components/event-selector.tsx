@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/select';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useFiltersStore } from '../store/filters-store';
 
 interface EventOption {
   id: string;
@@ -19,6 +20,7 @@ export function EventSelector({ events }: { events: EventOption[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedEvent, setSelectedEvent] = useState<EventOption | null>(null);
+  const { setCurrentPage } = useFiltersStore();
 
   useEffect(() => {
     const eventId = searchParams.get('eventId');
@@ -49,6 +51,8 @@ export function EventSelector({ events }: { events: EventOption[] }) {
       }
     }
 
+    // Reset pagination to first page when event changes
+    setCurrentPage(1);
     router.push(`/admin/events/submissions?${params.toString()}`);
   };
 

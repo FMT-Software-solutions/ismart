@@ -320,6 +320,28 @@ export async function getFormSubmissions(eventId?: string) {
   return { submissions: result as FormSubmissionTable[], error: null };
 }
 
+export async function deleteFormSubmission(id: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('form_submissions')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    recordError(error as Error, {
+      component: 'FormSubmissionService',
+      errorType: 'FormSubmissionDeleteError',
+      metadata: {
+        submissionId: id,
+      },
+    });
+    throw new Error(`Error deleting form submission: ${error.message}`);
+  }
+
+  return true;
+}
+
 export async function exportToExcel(submissions: FormSubmissionTable[]) {
   // Transform submissions into a format suitable for Excel
   const excelData = submissions.map((submission) => {

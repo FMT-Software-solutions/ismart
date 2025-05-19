@@ -109,7 +109,11 @@ export function SubmissionsClient({
             No submissions found matching the current filters
           </div>
         ) : (
-          <DataTable columns={columns} data={filteredSubmissions} />
+          <DataTable
+            columns={columns}
+            data={filteredSubmissions}
+            pageSize={10}
+          />
         )}
 
         <SubmissionDetails

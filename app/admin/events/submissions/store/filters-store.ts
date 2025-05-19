@@ -5,17 +5,19 @@ type DateRange = {
   to: Date | undefined;
 };
 
-type DatePreset = 'all' | 'today' | 'week' | 'month' | 'custom';
+type DatePreset = 'all' | 'today' | 'week' | 'month' | 'last3days' | 'custom';
 
 interface FiltersState {
   status: string;
   search: string;
   dateRange: DateRange;
   datePreset: DatePreset;
+  currentPage: number;
   setStatus: (status: string) => void;
   setSearch: (search: string) => void;
   setDateRange: (range: DateRange) => void;
   setDatePreset: (preset: DatePreset) => void;
+  setCurrentPage: (page: number) => void;
   reset: () => void;
 }
 
@@ -23,10 +25,12 @@ export const useFiltersStore = create<FiltersState>((set) => ({
   status: 'all',
   search: '',
   dateRange: { from: undefined, to: undefined },
-  datePreset: 'all',
-  setStatus: (status) => set(() => ({ status })),
-  setSearch: (search) => set(() => ({ search })),
-  setDateRange: (dateRange) => set(() => ({ dateRange, datePreset: 'custom' })),
+  datePreset: 'last3days',
+  currentPage: 1,
+  setStatus: (status) => set(() => ({ status, currentPage: 1 })),
+  setSearch: (search) => set(() => ({ search, currentPage: 1 })),
+  setDateRange: (dateRange) =>
+    set(() => ({ dateRange, datePreset: 'custom', currentPage: 1 })),
   setDatePreset: (datePreset) => {
     const today = new Date();
     let dateRange: DateRange = { from: undefined, to: undefined };
@@ -35,6 +39,14 @@ export const useFiltersStore = create<FiltersState>((set) => ({
       case 'today':
         dateRange = {
           from: today,
+          to: today,
+        };
+        break;
+      case 'last3days':
+        const threeDaysAgo = new Date(today);
+        threeDaysAgo.setDate(today.getDate() - 3);
+        dateRange = {
+          from: threeDaysAgo,
           to: today,
         };
         break;
@@ -59,13 +71,15 @@ export const useFiltersStore = create<FiltersState>((set) => ({
         dateRange = { from: undefined, to: undefined };
     }
 
-    set(() => ({ datePreset, dateRange }));
+    set(() => ({ datePreset, dateRange, currentPage: 1 }));
   },
+  setCurrentPage: (currentPage) => set(() => ({ currentPage })),
   reset: () =>
     set(() => ({
       status: 'all',
       search: '',
       dateRange: { from: undefined, to: undefined },
-      datePreset: 'all',
+      datePreset: 'last3days',
+      currentPage: 1,
     })),
 }));

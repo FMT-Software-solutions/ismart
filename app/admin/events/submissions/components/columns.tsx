@@ -9,9 +9,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
-import { Eye, MoreHorizontal } from 'lucide-react';
-import { createContext, useContext } from 'react';
+import { Eye, MoreHorizontal, Trash } from 'lucide-react';
+import { createContext, useContext, useState } from 'react';
 import { FormSubmissionTable } from '../../models/form-submission-schema';
+import { Separator } from '@/components/ui/separator';
+import { DeleteConfirmationDialog } from './delete-confirmation-dialog';
+import { useRouter } from 'next/navigation';
 
 // Create a context for managing the selected submission
 type SubmissionContextType = {
@@ -32,27 +35,55 @@ export const SubmissionContext = createContext<SubmissionContextType>({
 function ActionCell({ row }: { row: FormSubmissionTable }) {
   const { setSelectedSubmission, setIsDetailsOpen } =
     useContext(SubmissionContext);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const router = useRouter();
 
   const handleViewDetails = () => {
     setSelectedSubmission(row);
     setIsDetailsOpen(true);
   };
 
+  const handleDelete = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteComplete = () => {
+    // Trigger a refresh of the submissions data
+    router.refresh();
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleViewDetails}>
-          <Eye className="mr-2 h-4 w-4" />
-          View Details
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={handleViewDetails}>
+            <Eye className="mr-2 h-4 w-4" />
+            View Details
+          </DropdownMenuItem>
+          <Separator />
+          <DropdownMenuItem
+            className="text-red-600 focus:bg-red-100 dark:focus:bg-red-800 focus:text-red-600 dark:focus:text-red-100"
+            onClick={handleDelete}
+          >
+            <Trash className="mr-2 h-4 w-4" />
+            Delete Submission
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DeleteConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        submissionId={row.id}
+        onDeleted={handleDeleteComplete}
+      />
+    </>
   );
 }
 
@@ -90,8 +121,8 @@ export const columns = [
           row.status === 'approved'
             ? 'default'
             : row.status === 'rejected'
-            ? 'destructive'
-            : 'outline'
+              ? 'destructive'
+              : 'outline'
         }
       >
         {row.status}

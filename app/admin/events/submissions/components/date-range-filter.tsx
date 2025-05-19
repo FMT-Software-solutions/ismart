@@ -35,6 +35,7 @@ export function DateRangeFilter() {
           <SelectContent>
             <SelectItem value="all">All Time</SelectItem>
             <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="last3days">Last 3 Days</SelectItem>
             <SelectItem value="week">Last 7 Days</SelectItem>
             <SelectItem value="month">Last 30 Days</SelectItem>
             <SelectItem value="custom">Custom</SelectItem>
