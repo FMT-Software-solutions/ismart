@@ -5,7 +5,22 @@ type DateRange = {
   to: Date | undefined;
 };
 
-type DatePreset = 'all' | 'today' | 'week' | 'month' | 'last3days' | 'custom';
+export type DatePreset =
+  | 'all'
+  | 'today'
+  | 'week'
+  | 'month'
+  | 'last3days'
+  | 'custom';
+
+export const datePresetMap: Record<DatePreset, string> = {
+  all: 'All',
+  today: 'Today',
+  week: 'Last 7 Days',
+  month: 'Last 30 Days',
+  last3days: 'Last 3 Days',
+  custom: 'Custom',
+};
 
 interface FiltersState {
   status: string;

@@ -7,7 +7,8 @@ import { SubmissionFilters } from './submission-filters';
 import { DataTable } from './data-table';
 import { columns, SubmissionContext } from './columns';
 import { exportToExcel } from '../../services/form-submission-service';
-import { useFiltersStore } from '../store/filters-store';
+import { useFiltersStore, datePresetMap } from '../store/filters-store';
+import type { DatePreset } from '../store/filters-store';
 import { SubmissionDetails } from './submission-details';
 import { isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 
@@ -19,16 +20,50 @@ interface SubmissionsClientProps {
   }[];
 }
 
+const formatResultsMessage = ({
+  count,
+  status,
+  datePreset,
+  dateRange,
+  eventTitle,
+  search,
+}: {
+  count: number;
+  status: string;
+  datePreset: string;
+  dateRange: { from: Date | undefined; to: Date | undefined };
+  eventTitle: string;
+  search: string;
+}) => {
+  const registrationText = `registration${count !== 1 ? 's' : ''}`;
+  const statusText = status !== 'all' ? `${status} ` : '';
+  const searchText = search ? `matching "${search}" ` : '';
+  const eventText =
+    eventTitle.toLowerCase() === 'all events' ? 'all events' : eventTitle;
+
+  if (datePreset === 'all') {
+    return `Showing all ${count} ${statusText}${registrationText} ${searchText}for ${eventText}`;
+  }
+
+  const timeText =
+    datePreset === 'custom' && dateRange.from && dateRange.to
+      ? `from ${dateRange.from.toLocaleDateString()} to ${dateRange.to.toLocaleDateString()}`
+      : `for ${datePresetMap[datePreset as DatePreset].toLowerCase()}`;
+
+  return `Showing ${count} ${statusText}${registrationText} ${searchText}${timeText} for ${eventText}`;
+};
+
 export function SubmissionsClient({
   submissions,
   events,
 }: SubmissionsClientProps) {
-  const { status, search, dateRange } = useFiltersStore();
+  const { status, search, dateRange, datePreset } = useFiltersStore();
 
   // Submission details state
   const [selectedSubmission, setSelectedSubmission] =
     useState<FormSubmissionTable | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [selectedEventTitle, setSelectedEventTitle] = useState('All Events');
 
   // Apply client-side filters
   const filteredSubmissions = submissions.filter((submission) => {
@@ -98,8 +133,14 @@ export function SubmissionsClient({
     <SubmissionContext.Provider value={submissionContextValue}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <h1 className="text-3xl font-bold">Event Registrations</h1>
-          <EventSelector events={events} />
+          <h1 className="text-3xl font-bold">
+            Event Registrations{' '}
+            {submissions.length > 0 ? `(${submissions.length})` : ''}
+          </h1>
+          <EventSelector
+            events={events}
+            setSelectedEventTitle={setSelectedEventTitle}
+          />
         </div>
 
         <SubmissionFilters onExport={handleExport} />
@@ -109,11 +150,25 @@ export function SubmissionsClient({
             No submissions found matching the current filters
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={filteredSubmissions}
-            pageSize={10}
-          />
+          <>
+            <div className="py-2 px-4 border rounded-md">
+              <p className="text-sm">
+                {formatResultsMessage({
+                  count: filteredSubmissions.length,
+                  status,
+                  datePreset,
+                  dateRange,
+                  eventTitle: selectedEventTitle,
+                  search,
+                })}
+              </p>
+            </div>
+            <DataTable
+              columns={columns}
+              data={filteredSubmissions}
+              pageSize={10}
+            />
+          </>
         )}
 
         <SubmissionDetails

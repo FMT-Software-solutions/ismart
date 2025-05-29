@@ -68,7 +68,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import ImagePreviewModal from './ImagePreviewModal';
 import { cn, getVideoEmbedUrl } from '@/lib/utils';
 import { WhatsappIcon } from '@/components/icons';

@@ -16,7 +16,13 @@ interface EventOption {
   title: string;
 }
 
-export function EventSelector({ events }: { events: EventOption[] }) {
+export function EventSelector({
+  events,
+  setSelectedEventTitle,
+}: {
+  events: EventOption[];
+  setSelectedEventTitle: (title: string) => void;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedEvent, setSelectedEvent] = useState<EventOption | null>(null);
@@ -28,9 +34,11 @@ export function EventSelector({ events }: { events: EventOption[] }) {
       const event = events.find((e) => e.id === eventId);
       if (event) {
         setSelectedEvent(event);
+        setSelectedEventTitle(event.title);
       }
     } else {
       setSelectedEvent(null);
+      setSelectedEventTitle('All Events');
     }
   }, [searchParams, events]);
 
