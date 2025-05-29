@@ -34,14 +34,19 @@ export function PaymentOptions({
             </p>
           </Label>
         </div>
-        <div className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-muted/50">
-          <RadioGroupItem value="online" id="online" disabled={disabled} />
-          <Label htmlFor="online" className="flex-1 cursor-pointer">
-            <div className="font-medium">Online Payment (Paystack)</div>
-            <p className="text-sm text-muted-foreground">
-              Pay online securely using your card or mobile money
-            </p>
-          </Label>
+        <div className="rounded-md border p-3 cursor-pointer space-y-4">
+          <p className="text-sm text-muted-foreground italic ">
+            This option is currently disabled
+          </p>
+          <div className="flex items-center space-x-2 opacity-30">
+            <RadioGroupItem value="disabled" id="online" disabled />
+            <Label htmlFor="online" className="flex-1 cursor-pointer">
+              <div className="font-medium">Online Payment (Paystack)</div>
+              <p className="text-sm text-muted-foreground">
+                Pay online securely using your card or mobile money
+              </p>
+            </Label>
+          </div>
         </div>
       </RadioGroup>
     </div>
