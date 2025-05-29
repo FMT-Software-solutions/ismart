@@ -200,7 +200,6 @@ export default function EventsTable({
         ...event,
         gallery_images: event.gallery_images || undefined,
       };
-      console.log(processedEvent);
       setViewEvent(processedEvent);
       setViewModalOpen(true);
     } catch (error: any) {

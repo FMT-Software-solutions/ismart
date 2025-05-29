@@ -16,7 +16,7 @@ export async function getEvents(): Promise<{
     const { data, error } = await supabase
       .from('events')
       .select('*')
-      .gt('end_date', now) // Only get events that haven't ended yet
+      // .gt('end_date', now) // Only get events that haven't ended yet
       .order('created_at', { ascending: false });
 
     if (error) {
