@@ -30,3 +30,10 @@ export const formatDate = (dateString: string) => {
 export const formatTime = (dateString: string) => {
   return format(new Date(dateString), 'h:mm a');
 };
+
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-GH', {
+    style: 'currency',
+    currency: 'GHS',
+  }).format(amount);
+}

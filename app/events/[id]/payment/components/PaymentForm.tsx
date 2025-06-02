@@ -9,11 +9,15 @@ import { EventTable } from '@/app/admin/events/models/event-schema';
 import { format } from 'date-fns';
 import { createFormSubmission } from '@/app/admin/events/services/form-submission-service';
 import { incrementRegistrationCount } from '@/app/admin/events/services/event-service';
-import { PaystackPayment } from '@/components/PaystackPayment';
 import { sendConfirmationEmail } from '@/app/admin/events/services/email-service';
 import { recordError } from '@/app/services/error-service';
-import { PaymentOptions, PaymentMethod } from './PaymentOptions';
-import { ManualPaymentModal } from './ManualPaymentModal';
+import {
+  PaymentOptions,
+  PaystackPayment,
+  ManualPaymentModal,
+  PaymentMethod,
+  ManualPaymentDetails,
+} from '@/components/payment';
 import { Button } from '@/components/ui/button';
 
 interface PaymentFormProps {
@@ -147,10 +151,7 @@ export function PaymentForm({ event }: PaymentFormProps) {
     setIsManualPaymentModalOpen(true);
   };
 
-  const handleManualPaymentConfirm = async (
-    transactionId: string,
-    accountName: string
-  ) => {
+  const handleManualPaymentConfirm = async (details: ManualPaymentDetails) => {
     setIsProcessing(true);
     try {
       // Create form submission with pending status for manual payments
@@ -159,14 +160,14 @@ export function PaymentForm({ event }: PaymentFormProps) {
         status: 'pending',
         payment_method: 'manual',
         payment_details: {
-          transaction_id: transactionId,
-          account_name: accountName,
+          transaction_id: details.transactionId,
+          account_name: details.accountName,
           amount: currentPrice,
         },
         responses: {
           ...registrationData.responses,
-          'Transaction ID': transactionId,
-          'MoMo Account Name': accountName,
+          'Transaction ID': details.transactionId,
+          'MoMo Account Name': details.accountName,
           payment_method: 'manual',
         },
       });
@@ -215,8 +216,8 @@ export function PaymentForm({ event }: PaymentFormProps) {
           eventId: event.id,
           eventName: event.title,
           registrationData: registrationData,
-          transactionId,
-          accountName,
+          transactionId: details.transactionId,
+          accountName: details.accountName,
         },
       });
 

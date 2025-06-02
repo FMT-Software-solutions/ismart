@@ -24,9 +24,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { PaystackPayment, getDonationId } from '@/components/PaystackPayment';
+import {
+  PaymentOptions,
+  PaystackPayment,
+  ManualPaymentModal,
+  PaymentMethod,
+  getDonationId,
+  ManualPaymentDetails,
+} from '@/components/payment';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CreditCard, PhoneCall } from 'lucide-react';
+import { CreditCard, PhoneCall, Loader2 } from 'lucide-react';
 
 const donationFormSchema = z.object({
   amount: z.string().min(1, { message: 'Please enter a donation amount.' }),
@@ -47,11 +54,14 @@ export const DonationForm = () => {
   const [selectedAmount, setSelectedAmount] = useState('100');
   const [customAmount, setCustomAmount] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showPaymentButton, setShowPaymentButton] = useState(false);
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [donationData, setDonationData] = useState<DonationFormValues | null>(
     null
   );
   const [donationReference, setDonationReference] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('manual');
+  const [isManualPaymentModalOpen, setIsManualPaymentModalOpen] =
+    useState(false);
 
   const predefinedAmounts = ['50', '100', '250', '500', '1000'];
 
@@ -84,10 +94,10 @@ export const DonationForm = () => {
     const reference = getDonationId();
     setDonationReference(reference);
     setDonationData(data);
-    setShowPaymentButton(true);
+    setShowPaymentOptions(true);
   };
 
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = async (reference?: any) => {
     setIsProcessing(true);
 
     try {
@@ -111,10 +121,17 @@ export const DonationForm = () => {
           lastName: donationData.lastName,
           email: donationData.email,
           amount: donationData.amount,
-          donationId: donationReference,
+          donationReference: donationReference,
           date: formattedDate,
-          paymentMethod: 'Online Payment (Card/Mobile Money)',
+          paymentMethod,
           message: donationData.message,
+          status: paymentMethod === 'online' ? 'confirmed' : 'pending',
+          type: paymentMethod === 'online' ? 'confirm' : 'submit',
+          paymentDetails: {
+            transaction_id: reference.transactionId,
+            account_name: reference.accountName,
+            amount: donationData.amount,
+          },
         }),
       });
 
@@ -123,17 +140,23 @@ export const DonationForm = () => {
       }
 
       toast({
-        title: 'Donation Successful!',
+        title:
+          paymentMethod === 'online'
+            ? 'Donation Successful!'
+            : 'Donation Submitted!',
         description:
-          'Thank you for your generous support. A confirmation receipt has been sent to your email.',
+          paymentMethod === 'online'
+            ? 'Thank you for your generous support. A confirmation receipt has been sent to your email.'
+            : 'Your donation details have been submitted. We will verify your payment and send you a confirmation email.',
       });
 
       // Reset form and state
       form.reset();
       setSelectedAmount('100');
       setCustomAmount(false);
-      setShowPaymentButton(false);
+      setShowPaymentOptions(false);
       setDonationData(null);
+      setIsManualPaymentModalOpen(false);
     } catch (error) {
       console.error('Error processing donation:', error);
       toast({
@@ -155,8 +178,21 @@ export const DonationForm = () => {
     setIsProcessing(false);
   };
 
+  const handleManualPayment = () => {
+    setIsManualPaymentModalOpen(true);
+  };
+
+  const handleManualPaymentConfirm = async (details: ManualPaymentDetails) => {
+    await handlePaymentSuccess({
+      transactionId: details.transactionId,
+      accountName: details.accountName,
+      amount: donationData?.amount,
+      method: 'manual',
+    });
+  };
+
   useEffect(() => {
-    setShowPaymentButton(false);
+    setShowPaymentOptions(false);
   }, [selectedAmount, customAmount]);
 
   return (
@@ -317,31 +353,82 @@ export const DonationForm = () => {
               )}
             />
 
-            {!showPaymentButton ? (
+            {!showPaymentOptions ? (
               <Button type="submit" className="w-full">
                 Proceed to Donate
               </Button>
             ) : (
-              <PaystackPayment
-                email={donationData?.email || ''}
-                amount={Number(donationData?.amount) || 0}
-                reference={donationReference}
-                buttonText={`Donate GHS ${donationData?.amount || 0}`}
-                metadata={{
-                  name: `${donationData?.firstName} ${donationData?.lastName}`,
-                  phone: donationData?.phone || '',
-                  custom_fields: [
-                    {
-                      display_name: 'Donation ID',
-                      variable_name: 'donation_id',
-                      value: donationReference,
-                    },
-                  ],
-                }}
-                onSuccess={handlePaymentSuccess}
-                onClose={handlePaymentClose}
-                isProcessing={isProcessing}
-              />
+              <div className="space-y-6">
+                <PaymentOptions
+                  selected={paymentMethod}
+                  onSelect={setPaymentMethod}
+                  disabled={isProcessing}
+                />
+
+                {paymentMethod === 'manual' ? (
+                  <div className="space-y-4">
+                    <div className="rounded-md bg-muted p-4">
+                      <h3 className="font-medium mb-2">
+                        Mobile Money Payment Instructions
+                      </h3>
+                      <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                        <li>
+                          Send payment to MTN MoMo number:{' '}
+                          <span className="font-medium">0592185098</span>
+                        </li>
+                        <li>
+                          The recipient name will appear as either{' '}
+                          <span className="font-medium">ESTHER BOATENG</span> or{' '}
+                          <span className="font-medium">
+                            HE REIGNS ESTI-NASH ENT
+                          </span>
+                        </li>
+                        <li>
+                          Make sure to save your Transaction ID from the MoMo
+                          message
+                        </li>
+                        <li>
+                          Enter the Transaction ID and your MoMo registered name
+                          below
+                        </li>
+                      </ol>
+                    </div>
+                    <Button
+                      onClick={handleManualPayment}
+                      disabled={isProcessing}
+                      className="w-full py-6"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        'Enter Payment Details'
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <PaystackPayment
+                    email={donationData?.email || ''}
+                    amount={Number(donationData?.amount) || 0}
+                    metadata={{
+                      name: `${donationData?.firstName} ${donationData?.lastName}`,
+                      phone: donationData?.phone || '',
+                      custom_fields: [
+                        {
+                          display_name: 'Donation ID',
+                          variable_name: 'donation_id',
+                          value: donationReference,
+                        },
+                      ],
+                    }}
+                    onSuccess={handlePaymentSuccess}
+                    onClose={handlePaymentClose}
+                    isProcessing={isProcessing}
+                  />
+                )}
+              </div>
             )}
           </form>
         </Form>
@@ -354,6 +441,16 @@ export const DonationForm = () => {
           </a>
         </p>
       </CardFooter>
+
+      <ManualPaymentModal
+        isOpen={isManualPaymentModalOpen}
+        onClose={() => setIsManualPaymentModalOpen(false)}
+        onConfirm={handleManualPaymentConfirm}
+        isProcessing={isProcessing}
+        title="Confirm Donation Payment"
+        description="Enter your MoMo transaction details to complete your donation"
+        amount={donationData?.amount}
+      />
     </Card>
   );
 };

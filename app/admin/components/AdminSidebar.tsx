@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
+  DollarSign,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createClientSupabaseClient } from '@/lib/supabase/client';
@@ -55,6 +56,11 @@ const AdminSidebar = () => {
       label: 'Registrations',
       href: '/admin/events/submissions?eventId=all-events',
       icon: <ClipboardList size={20} />,
+    },
+    {
+      label: 'Donations',
+      href: '/admin/donations',
+      icon: <DollarSign size={20} />,
     },
   ];
 
