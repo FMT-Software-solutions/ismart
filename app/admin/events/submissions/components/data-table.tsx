@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -8,42 +9,62 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { FormSubmissionTable } from '../../models/form-submission-schema';
 import { TablePagination } from './table-pagination';
-import { useFiltersStore } from '../store/filters-store';
+import { FormSubmissionTable } from '../../models/form-submission-schema';
+import { SendEmailSheet } from './send-email-sheet';
+import { DeleteConfirmationDialog } from './delete-confirmation-dialog';
+import { useRouter } from 'next/navigation';
+import { EventTable } from '../../models/event-schema';
 
 interface DataTableProps {
-  data: FormSubmissionTable[];
-  columns: {
-    header: string;
-    accessorKey?: string;
-    cell?: (row: FormSubmissionTable) => React.ReactNode;
-    className?: string;
-    width?: string;
-  }[];
+  columns: any[];
+  data: (FormSubmissionTable & { event: Partial<EventTable> })[];
   pageSize?: number;
 }
 
-export function DataTable({ data, columns, pageSize = 10 }: DataTableProps) {
-  const { currentPage, setCurrentPage } = useFiltersStore();
+export function DataTable({ columns, data, pageSize = 10 }: DataTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isEmailSheetOpen, setIsEmailSheetOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<FormSubmissionTable | null>(
+    null
+  );
+  const router = useRouter();
 
-  // Calculate pagination values
+  // Calculate pagination
   const totalPages = Math.ceil(data.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const currentData = data.slice(startIndex, endIndex);
 
+  const handleDeleteComplete = () => {
+    setIsDeleteDialogOpen(false);
+    setSelectedRow(null);
+    router.refresh();
+  };
+
+  // Shared handlers for dialogs
+  const handleSendEmail = (row: FormSubmissionTable) => {
+    setSelectedRow(row);
+    setIsEmailSheetOpen(true);
+  };
+
+  const handleDelete = (row: FormSubmissionTable) => {
+    setSelectedRow(row);
+    setIsDeleteDialogOpen(true);
+  };
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="rounded-md border overflow-x-auto">
+    <div className="space-y-4">
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              {columns.map((column) => (
+              {columns.map((column, index) => (
                 <TableHead
-                  key={column.header}
+                  key={index}
                   className={column.className}
-                  style={column.width ? { width: column.width } : undefined}
+                  style={{ width: column.width }}
                 >
                   {column.header}
                 </TableHead>
@@ -53,30 +74,12 @@ export function DataTable({ data, columns, pageSize = 10 }: DataTableProps) {
           <TableBody>
             {currentData.map((row) => (
               <TableRow key={row.id}>
-                {columns.map((column) => (
-                  <TableCell
-                    key={`${row.id}-${column.header}`}
-                    className={column.className}
-                  >
-                    <div className="truncate max-w-[300px]">
-                      {column.cell
-                        ? column.cell(row)
-                        : column.accessorKey
-                          ? typeof row[
-                              column.accessorKey as keyof FormSubmissionTable
-                            ] === 'object'
-                            ? JSON.stringify(
-                                row[
-                                  column.accessorKey as keyof FormSubmissionTable
-                                ]
-                              )
-                            : String(
-                                row[
-                                  column.accessorKey as keyof FormSubmissionTable
-                                ]
-                              )
-                          : null}
-                    </div>
+                {columns.map((column, index) => (
+                  <TableCell key={index} className={column.className}>
+                    {column.cell(row, {
+                      onSendEmail: () => handleSendEmail(row),
+                      onDelete: () => handleDelete(row),
+                    })}
                   </TableCell>
                 ))}
               </TableRow>
@@ -89,6 +92,22 @@ export function DataTable({ data, columns, pageSize = 10 }: DataTableProps) {
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
+      />
+
+      <SendEmailSheet
+        open={isEmailSheetOpen}
+        onOpenChange={setIsEmailSheetOpen}
+        submission={selectedRow as FormSubmissionTable & { event?: EventTable }}
+      />
+
+      <DeleteConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setSelectedRow(null);
+        }}
+        submissionId={selectedRow?.id || ''}
+        onDeleted={handleDeleteComplete}
       />
     </div>
   );

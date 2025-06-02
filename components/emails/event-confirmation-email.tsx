@@ -8,7 +8,6 @@ import {
   Html,
   Link,
   Preview,
-  Section,
   Text,
 } from '@react-email/components';
 import { Tailwind } from '@react-email/tailwind';
@@ -70,7 +69,7 @@ export const EventConfirmationEmail = ({
                 : `Your registration for ${eventTitle} has been confirmed.`}
             </Text>
 
-            <Section className="bg-[#f6f6f6] rounded p-[10px] my-[16px]">
+            <div className="bg-[#f6f6f6] rounded p-[10px] my-[16px]">
               <Text className="text-black text-[14px] leading-[24px] m-0 font-bold">
                 Event Details:
               </Text>
@@ -107,7 +106,7 @@ export const EventConfirmationEmail = ({
                   </Button>
                 </Text>
               )}
-            </Section>
+            </div>
 
             {whatsappGroupUrl && (
               <>

@@ -62,6 +62,10 @@ export function AccreditationSection() {
             </div>
           </motion.div>
         </motion.div>
+
+        <p className="text-center text-gray-800 dark:text-gray-200">
+          iSMART is an ACTD-USA accredited professional training institution.
+        </p>
         <Button
           size="lg"
           variant="outline"

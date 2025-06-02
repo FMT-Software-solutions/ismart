@@ -1,3 +1,5 @@
+import { EventTable } from '../models/event-schema';
+import { FormSubmissionTable } from '../models/form-submission-schema';
 import { getEvents } from '../services/event-service';
 import { getFormSubmissions } from '../services/form-submission-service';
 import { SubmissionsClient } from './components/submissions-client';
@@ -19,6 +21,7 @@ export default async function SubmissionsPage({
   const { submissions, error } = await getFormSubmissions(
     eventId === 'all-events' ? undefined : eventId
   );
+
   const { events, error: eventsError } = await getEvents();
 
   if (error || eventsError) {
@@ -36,7 +39,9 @@ export default async function SubmissionsPage({
     <div className="container mx-auto py-10">
       <Suspense fallback={<div>Loading submissions...</div>}>
         <SubmissionsClient
-          submissions={submissions || []}
+          submissions={
+            submissions as (FormSubmissionTable & { event: EventTable })[] | []
+          }
           events={events || []}
         />
       </Suspense>

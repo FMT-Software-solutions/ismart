@@ -10,7 +10,7 @@ import { FormSubmissionTable } from '../../models/form-submission-schema';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EventTable } from '../../models/event-schema';
 import { useRouter } from 'next/navigation';
-
+import { FormSubmission } from '../../models/form-schema';
 interface ApprovalSectionProps {
   submission: FormSubmissionTable;
   event: EventTable | undefined;
@@ -40,8 +40,10 @@ export function ApprovalSection({
       setIsProcessing(true);
       setError(null);
 
-      // 1. Update submission status to approved
-      await updateFormSubmissionStatus(submission.id, 'approved');
+      if (submission.status === 'pending') {
+        // 1. Update submission status to approved
+        await updateFormSubmissionStatus(submission.id, 'approved');
+      }
 
       // 2. Send confirmation email
       const emailResponse = await fetch('/api/send-confirmation-email', {
@@ -86,13 +88,17 @@ export function ApprovalSection({
   };
 
   // Only show approval section for pending submissions
-  if (submission.status !== 'pending') {
+  if (submission.status !== 'pending' && submission.status !== 'approved') {
     return null;
   }
 
   return (
     <div className="border rounded-md p-4 space-y-4">
-      <h3 className="text-lg font-medium">Approve Registration</h3>
+      <h3 className="text-lg font-medium">
+        {submission.status === 'pending'
+          ? 'Approve Registration'
+          : 'Resend Confirmation Email'}
+      </h3>
 
       {error && (
         <Alert variant="destructive">
@@ -105,7 +111,9 @@ export function ApprovalSection({
         <Alert className="bg-green-50 border-green-200 text-green-800">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription>
-            Registration approved and confirmation email sent successfully!
+            {submission.status === 'pending'
+              ? 'Registration approved and confirmation email sent successfully!'
+              : `Confirmation email sent to ${email} successfully!`}
           </AlertDescription>
         </Alert>
       )}
@@ -140,10 +148,16 @@ export function ApprovalSection({
         ) : success ? (
           <>
             <CheckCircle className="mr-2 h-4 w-4" />
-            Approved!
+            {submission.status === 'pending'
+              ? 'Approved'
+              : 'Resent Confirmation Email'}
           </>
         ) : (
-          'Approve & Send Confirmation Email'
+          <>
+            {submission.status === 'pending'
+              ? 'Approve & Send Confirmation Email'
+              : 'Resend Confirmation Email'}
+          </>
         )}
       </Button>
     </div>

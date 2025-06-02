@@ -202,7 +202,7 @@ export function SubmissionDetails({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md md:max-w-xl overflow-y-auto"
+        className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto"
       >
         {submission ? (
           <>

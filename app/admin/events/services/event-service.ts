@@ -280,12 +280,12 @@ export async function getEvents() {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('events')
-    .select('id, title')
+    .select('*')
     .order('created_at', { ascending: false });
 
   if (error) {
     return { events: null, error };
   }
 
-  return { events: data as Pick<EventTable, 'id' | 'title'>[], error: null };
+  return { events: data, error: null };
 }

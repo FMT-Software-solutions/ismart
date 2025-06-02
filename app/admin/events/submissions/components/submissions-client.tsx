@@ -11,13 +11,11 @@ import { useFiltersStore, datePresetMap } from '../store/filters-store';
 import type { DatePreset } from '../store/filters-store';
 import { SubmissionDetails } from './submission-details';
 import { isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { EventTable } from '../../models/event-schema';
 
 interface SubmissionsClientProps {
-  submissions: FormSubmissionTable[];
-  events: {
-    id: string;
-    title: string;
-  }[];
+  submissions: (FormSubmissionTable & { event: EventTable })[];
+  events: EventTable[];
 }
 
 const formatResultsMessage = ({
@@ -143,7 +141,7 @@ export function SubmissionsClient({
           />
         </div>
 
-        <SubmissionFilters onExport={handleExport} />
+        <SubmissionFilters onExport={handleExport} events={events} />
 
         {filteredSubmissions.length === 0 ? (
           <div className="text-center p-4 border rounded-md">

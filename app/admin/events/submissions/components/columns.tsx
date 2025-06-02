@@ -8,13 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { formatDistanceToNow } from 'date-fns';
-import { Eye, MoreHorizontal, Trash } from 'lucide-react';
-import { createContext, useContext, useState } from 'react';
-import { FormSubmissionTable } from '../../models/form-submission-schema';
 import { Separator } from '@/components/ui/separator';
-import { DeleteConfirmationDialog } from './delete-confirmation-dialog';
-import { useRouter } from 'next/navigation';
+import { formatDistanceToNow } from 'date-fns';
+import { Eye, Mail, MoreHorizontal, Trash } from 'lucide-react';
+import { createContext, useContext } from 'react';
+import { EventTable } from '../../models/event-schema';
+import { FormSubmissionTable } from '../../models/form-submission-schema';
 
 // Create a context for managing the selected submission
 type SubmissionContextType = {
@@ -32,58 +31,72 @@ export const SubmissionContext = createContext<SubmissionContextType>({
 });
 
 // Create a separate component for the actions cell to ensure consistent hook usage
-function ActionCell({ row }: { row: FormSubmissionTable }) {
+function ActionCell({
+  row,
+  onSendEmail,
+  onDelete,
+}: {
+  row: FormSubmissionTable;
+  onSendEmail: () => void;
+  onDelete: () => void;
+}) {
   const { setSelectedSubmission, setIsDetailsOpen } =
     useContext(SubmissionContext);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const router = useRouter();
 
   const handleViewDetails = () => {
     setSelectedSubmission(row);
     setIsDetailsOpen(true);
   };
 
-  const handleDelete = () => {
-    setIsDeleteDialogOpen(true);
-  };
+  // Check if event is valid for sending emails
+  const isEventValid =
+    row.status !== 'pending' &&
+    row.event &&
+    'status' in row.event &&
+    'end_date' in row.event &&
+    (row.event as EventTable).status === 'published' &&
+    new Date((row.event as EventTable).end_date) > new Date();
 
-  const handleDeleteComplete = () => {
-    // Trigger a refresh of the submissions data
-    router.refresh();
+  const getEmailTooltip = () => {
+    if (!row.event) return 'No event information available';
+    if ((row.event as EventTable).status !== 'published')
+      return 'Event is not published';
+    if (new Date((row.event as EventTable).end_date) <= new Date())
+      return 'Event has ended';
+    return 'Send event email';
   };
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleViewDetails}>
-            <Eye className="mr-2 h-4 w-4" />
-            View Details
-          </DropdownMenuItem>
-          <Separator />
-          <DropdownMenuItem
-            className="text-red-600 focus:bg-red-100 dark:focus:bg-red-800 focus:text-red-600 dark:focus:text-red-100"
-            onClick={handleDelete}
-          >
-            <Trash className="mr-2 h-4 w-4" />
-            Delete Submission
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <DeleteConfirmationDialog
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        submissionId={row.id}
-        onDeleted={handleDeleteComplete}
-      />
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handleViewDetails}>
+          <Eye className="mr-2 h-4 w-4" />
+          View Details
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={onSendEmail}
+          disabled={!isEventValid}
+          title={getEmailTooltip()}
+        >
+          <Mail className="mr-2 h-4 w-4" />
+          Send Email
+        </DropdownMenuItem>
+        <Separator />
+        <DropdownMenuItem
+          className="text-red-600 focus:bg-red-100 dark:focus:bg-red-800 focus:text-red-600 dark:focus:text-red-100"
+          onClick={onDelete}
+        >
+          <Trash className="mr-2 h-4 w-4" />
+          Delete Submission
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -195,6 +208,12 @@ export const columns = [
     header: '',
     width: '5%',
     className: 'w-[50px]',
-    cell: (row: FormSubmissionTable) => <ActionCell row={row} />,
+    cell: (
+      row: FormSubmissionTable & { event: EventTable },
+      {
+        onSendEmail,
+        onDelete,
+      }: { onSendEmail: () => void; onDelete: () => void }
+    ) => <ActionCell row={row} onSendEmail={onSendEmail} onDelete={onDelete} />,
   },
 ];

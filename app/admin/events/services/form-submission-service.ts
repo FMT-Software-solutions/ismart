@@ -238,10 +238,11 @@ export async function getUserFormSubmissions(userId: string) {
 export async function getFormSubmissions(eventId?: string) {
   const supabase = createClient();
 
-  // Get submissions, filtered by event if provided
   let query = supabase
     .from('form_submissions')
-    .select('*')
+    .select(
+      '*, event: event_id(id, title, start_date, end_date, status, theme, event_type, location, event_link, whatsapp_group_url, require_approval)'
+    )
     .order('created_at', { ascending: false });
 
   if (eventId) {
@@ -311,7 +312,6 @@ export async function getFormSubmissions(eventId?: string) {
   // Combine data
   const result = submissions.map((submission) => ({
     ...submission,
-    event: eventMap[submission.event_id] || { title: 'Unknown Event' },
     form_schema: submission.form_schema_id
       ? formSchemaMap[submission.form_schema_id] || { title: 'Unknown Form' }
       : { title: 'No Form' },
