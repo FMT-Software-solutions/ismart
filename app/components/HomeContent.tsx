@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UpcomingEventsSection } from './UpcomingEventsSection';
+import { AccreditationSection } from './AccreditationSection';
 import { Event } from '@/app/admin/events/models/event-schema';
 
 const fadeIn = {
@@ -56,13 +57,13 @@ export function HomeContent({ upcomingEvents }: HomeContentProps) {
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="relative">
-        <div className="hero-gradient text-white">
-          <div className="container-custom py-20 md:py-32">
+        <div className="hero-gradient text-white grid grid-cols-1 lg:grid-cols-2 gap-10 place-items-center py-20 md:py-32">
+          <div className="container-custom">
             <motion.div
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
-              className="max-w-3xl"
+              className="pl-8"
             >
               <motion.h1 variants={fadeIn} className="heading-1 mb-6">
                 Transforming Lives Through Research & Education
@@ -89,6 +90,9 @@ export function HomeContent({ upcomingEvents }: HomeContentProps) {
                 </Button>
               </motion.div>
             </motion.div>
+          </div>
+          <div className="container-custom w-[95%] md:w-fit mx-10">
+            <AccreditationSection />
           </div>
         </div>
 
@@ -257,8 +261,13 @@ export function HomeContent({ upcomingEvents }: HomeContentProps) {
       {/* Upcoming Events Section */}
       <UpcomingEventsSection events={upcomingEvents} />
 
+      {/* Accreditation Section */}
+      <div className="container-custom -mb-20 border border-gray-100 dark:border-gray-800 p-0 rounded-lg shadow-xl">
+        <AccreditationSection />
+      </div>
+
       {/* CTA Section */}
-      <section className="section-padding bg-primary text-primary-foreground">
+      <section className="section-padding bg-primary text-primary-foreground py-48">
         <div className="container-custom">
           <motion.div
             initial="hidden"
