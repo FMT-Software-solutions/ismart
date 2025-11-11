@@ -77,7 +77,7 @@ export function ConfirmationContent({ event }: ConfirmationContentProps) {
   // Show appropriate content based on payment method
   const renderContent = () => {
     // If payment method is not yet determined, show loading
-    if (paymentMethod === null) {
+    if (paymentMethod === null && !event.is_free) {
       return (
         <div className="text-center p-6">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
