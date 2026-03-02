@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { featureFlags } from '@/const/feature-flags';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -25,32 +26,32 @@ export default function Footer() {
             </p>
             <div className="flex space-x-4">
               <Link
-                href="#"
+                href="https://www.facebook.com/share/1NSSoxtrFs/"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
-                <Facebook size={20} />
+                <Image src="/facebook.svg" alt="Facebook" width={20} height={20} />
                 <span className="sr-only">Facebook</span>
               </Link>
               <Link
                 href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors hidden"
               >
-                <Twitter size={20} />
-                <span className="sr-only">Twitter</span>
+                <Image src="/x.svg" alt="X" width={20} height={20} />
+                <span className="sr-only">X</span>
               </Link>
               <Link
-                href="#"
+                href="https://www.instagram.com/ismarthq"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
-                <Instagram size={20} />
+                <Image src="/instagram.svg" alt="Instagram" width={20} height={20} />
                 <span className="sr-only">Instagram</span>
               </Link>
               <Link
-                href="#"
+                href="https://www.tiktok.com/@sexual_intelligence_hq"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
-                <Linkedin size={20} />
-                <span className="sr-only">LinkedIn</span>
+                <Image src="/tiktok.svg" alt="TikTok" width={20} height={20} />
+                <span className="sr-only">TikTok</span>
               </Link>
             </div>
           </div>
