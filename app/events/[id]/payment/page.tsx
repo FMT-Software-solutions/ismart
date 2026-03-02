@@ -1,5 +1,5 @@
 import { getEventById } from '@/app/admin/events/services/event-service';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { PaymentForm } from './components/PaymentForm';
 
 export default async function EventPaymentPage({
@@ -16,12 +16,7 @@ export default async function EventPaymentPage({
 
   // Redirect to registration if event is free
   if (event.is_free) {
-    return {
-      redirect: {
-        destination: `/events/${id}/register`,
-        permanent: false,
-      },
-    };
+    redirect(`/events/${id}/register`);
   }
 
   return (
