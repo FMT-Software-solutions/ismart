@@ -177,3 +177,78 @@
     list-style: inherit;
   }
 }
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: none;
+  font-weight: normal;
+}
+
+@layer components {
+  .hero-gradient {
+    @apply bg-gradient-to-r from-primary via-primary/90 to-secondary;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  .container-custom {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .heading-1 {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight;
+  }
+
+  .heading-2 {
+    @apply text-3xl md:text-4xl font-bold tracking-tight;
+  }
+
+  .heading-3 {
+    @apply text-2xl md:text-3xl font-bold;
+  }
+
+  .heading-4 {
+    @apply text-xl md:text-2xl font-semibold;
+  }
+
+  .paragraph {
+    @apply text-base md:text-lg leading-relaxed;
+  }
+
+  .nav-link {
+    @apply text-foreground/80 hover:text-foreground transition-colors duration-200;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+}
+
+/* scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
