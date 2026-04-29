@@ -17,11 +17,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import {
-  FieldCategory,
   type AnyFormField,
   type FormSchema,
   type FormSection,
@@ -451,9 +449,9 @@ export default function FormBuilder({
                                         {isFieldAdded(field.id)
                                           ? 'Added'
                                           : `Add to ${section.title.substring(
-                                              0,
-                                              8
-                                            )}...`}
+                                            0,
+                                            8
+                                          )}...`}
                                       </Button>
                                     ))}
                                   </div>

@@ -79,8 +79,9 @@ export function FileUpload({
 
       try {
         const uploadPromises = Array.from(files).map(async (file) => {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+          // Use original file name with timestamp to avoid collisions
+          const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+          const fileName = `${Date.now()}_${safeName}`;
           const filePath = `${fileName}`;
 
           const { data, error: uploadError } = await supabase.storage
@@ -193,11 +194,8 @@ export function FileUpload({
                 <div className="flex items-center gap-4">
                   {getFileIcon(url)}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {url.split('/').pop()}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {url}
+                    <p className="text-sm font-medium truncate" title={decodeURIComponent(url.split('/').pop() || '')}>
+                      {decodeURIComponent(url.split('/').pop() || '').replace(/^\d+_/, '')}
                     </p>
                   </div>
                 </div>

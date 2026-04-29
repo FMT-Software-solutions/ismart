@@ -162,7 +162,7 @@ export default function RegistrationFormRenderer({
       const value = formData[fieldId];
 
       if (field.required) {
-        if (!value || (typeof value === 'string' && value.trim() === '')) {
+        if (!value || (typeof value === 'string' && value.trim() === '') || (Array.isArray(value) && (!value || value.length === 0))) {
           newErrors[fieldId] = 'This field is required';
           isValid = false;
         }
