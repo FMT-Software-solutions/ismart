@@ -2,12 +2,19 @@
 
 import { motion } from 'framer-motion';
 import { CampaignCard } from './CampaignCard';
-import { type currentCampaigns } from '../data';
+
+export interface Campaign {
+  title: string;
+  description: string;
+  progress: number;
+  timeframe: string;
+  image: string;
+}
 
 interface CurrentCampaignsProps {
   title: string;
   description: string;
-  campaigns: typeof currentCampaigns;
+  campaigns: Campaign[];
   fadeIn: any;
   staggerContainer: any;
 }

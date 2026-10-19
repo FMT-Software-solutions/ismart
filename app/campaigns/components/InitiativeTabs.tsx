@@ -27,7 +27,10 @@ export function InitiativeTabs({
       variants={staggerContainer}
     >
       <Tabs defaultValue={initiatives[0]?.year} className="w-full">
-        <TabsList className="grid w-full max-w-md mx-auto grid-cols-1 sm:grid-cols-3 mb-8">
+        <TabsList
+          className="grid w-full max-w-md mx-auto mb-8"
+          style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}
+        >
           {initiatives.map((yearData) => (
             <TabsTrigger key={yearData.year} value={yearData.year}>
               {yearData.year}

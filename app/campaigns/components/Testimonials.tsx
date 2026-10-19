@@ -2,12 +2,18 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { type testimonials } from '../data';
+
+export interface Testimonial {
+  name: string;
+  role: string;
+  image: string;
+  quote: string;
+}
 
 interface TestimonialsProps {
   title: string;
   description: string;
-  testimonials: typeof testimonials;
+  testimonials: Testimonial[];
   fadeIn: any;
   staggerContainer: any;
 }

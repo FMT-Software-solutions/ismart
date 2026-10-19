@@ -278,7 +278,7 @@ export default function DonatePageClient() {
                 people.
               </p>
               <Button variant="outline" asChild>
-                <a href="/media">Share Resources</a>
+                <a href="/about">Learn About Our Mission</a>
               </Button>
             </motion.div>
           </motion.div>
@@ -406,90 +406,6 @@ export default function DonatePageClient() {
                 </div>
               </TabsContent>
             </Tabs>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Testimonial Section */}
-      <section className="section-padding">
-        <div className="container-custom">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-100px' }}
-            variants={staggerContainer}
-            className="text-center max-w-3xl mx-auto mb-16"
-          >
-            <motion.h2 variants={fadeIn} className="heading-2 mb-4">
-              Donor Stories
-            </motion.h2>
-            <motion.p
-              variants={fadeIn}
-              className="paragraph text-muted-foreground"
-            >
-              Hear from those who support our mission
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-100px' }}
-            variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8"
-          >
-            <motion.div
-              variants={fadeIn}
-              className="bg-muted/30 p-8 rounded-lg"
-            >
-              <div className="flex items-center mb-6">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4">
-                  <Image
-                    src="https://images.unsplash.com/photo-1573497161161-c3e73707e25c?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                    alt="Donor"
-                    fill
-                    style={{ objectFit: 'cover' }}
-                  />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Grace Amoah</h3>
-                  <p className="text-sm text-muted-foreground">Monthly Donor</p>
-                </div>
-              </div>
-              <p className="italic">
-                "Supporting iSMART has been incredibly rewarding. Their work in
-                strengthening marriages has had a direct impact on my community,
-                and I'm proud to be a part of their mission."
-              </p>
-            </motion.div>
-
-            <motion.div
-              variants={fadeIn}
-              className="bg-muted/30 p-8 rounded-lg"
-            >
-              <div className="flex items-center mb-6">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4">
-                  <Image
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80"
-                    alt="Donor"
-                    fill
-                    style={{ objectFit: 'cover' }}
-                  />
-                </div>
-                <div>
-                  <h3 className="font-semibold">Kwame Asante</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Corporate Partner
-                  </p>
-                </div>
-              </div>
-              <p className="italic">
-                "As a business leader, I believe in investing in organizations
-                that make a real difference. iSMART's research and education
-                programs are transforming lives and strengthening families
-                across Ghana."
-              </p>
-            </motion.div>
           </motion.div>
         </div>
       </section>

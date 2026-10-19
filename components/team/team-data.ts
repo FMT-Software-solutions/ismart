@@ -70,7 +70,7 @@ export const teamMembers: TeamMember[] = [
       'https://res.cloudinary.com/deptmmxdn/image/upload/v1746540539/DSC_1797_n2mp7c.jpg',
   },
   {
-    name: 'Mrs Elizabeth Boakye Yeboah',
+    name: 'Miss Elizabeth Boakye',
     role: 'Adminstrative & Finance Manager',
     bio: '',
     image:

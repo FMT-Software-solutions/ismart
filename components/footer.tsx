@@ -29,7 +29,12 @@ export default function Footer() {
                 href="https://www.facebook.com/share/1NSSoxtrFs/"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
-                <Image src="/facebook.svg" alt="Facebook" width={20} height={20} />
+                <Image
+                  src="/facebook.svg"
+                  alt="Facebook"
+                  width={20}
+                  height={20}
+                />
                 <span className="sr-only">Facebook</span>
               </Link>
               <Link
@@ -43,7 +48,12 @@ export default function Footer() {
                 href="https://www.instagram.com/ismarthq"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
-                <Image src="/instagram.svg" alt="Instagram" width={20} height={20} />
+                <Image
+                  src="/instagram.svg"
+                  alt="Instagram"
+                  width={20}
+                  height={20}
+                />
                 <span className="sr-only">Instagram</span>
               </Link>
               <Link
@@ -73,18 +83,18 @@ export default function Footer() {
                 <>
                   <li>
                     <Link
-                      href="/events"
+                      href="/programs"
                       className="text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      Events & Trainings
+                      Programs
                     </Link>
                   </li>
                   <li>
                     <Link
-                      href="/trainings/register"
+                      href="/events"
                       className="text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      Register for Training
+                      Events
                     </Link>
                   </li>
                 </>

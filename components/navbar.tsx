@@ -44,14 +44,11 @@ const navLinks = [
     visible: featureFlags.campaigns,
   },
   {
-    title: 'Events & Trainings',
-    href: '/events',
+    title: 'Training and Education',
+    href: '/programs',
     submenu: [
-      { title: 'All Events', href: '/events' },
-      // { title: 'Sexuality Studies', href: '/trainings/sexuality' },
-      // { title: 'Marriage & Relationships', href: '/trainings/marriage' },
-      // { title: 'Parenting & Family Life', href: '/trainings/family' },
-      // { title: 'Register for Training', href: '/trainings/register' },
+      { title: 'Programs', href: '/programs' },
+      { title: 'Events', href: '/events' },
     ],
     visible: featureFlags.trainings,
   },
@@ -59,9 +56,7 @@ const navLinks = [
     title: 'Research',
     href: '/research',
     submenu: [
-      { title: 'Sex & Sexuality', href: '/research/sexuality' },
-      { title: 'Dating & Marriage', href: '/research/marriage' },
-      { title: 'Family Life & Parenting', href: '/research/family' },
+      { title: 'Research Focus Areas', href: '/research#focus-areas' },
       { title: 'Publications', href: '/research/publications' },
     ],
     visible: featureFlags.research,
@@ -156,13 +151,12 @@ export default function Navbar() {
                       </NavigationMenuItem>
                     ) : (
                       <NavigationMenuItem key={link.title}>
-                        <Link href={link.href} legacyBehavior passHref>
-                          <NavigationMenuLink
-                            className={navigationMenuTriggerStyle()}
-                          >
-                            {link.title}
-                          </NavigationMenuLink>
-                        </Link>
+                        <NavigationMenuLink
+                          asChild
+                          className={navigationMenuTriggerStyle()}
+                        >
+                          <Link href={link.href}>{link.title}</Link>
+                        </NavigationMenuLink>
                       </NavigationMenuItem>
                     )
                   )}
@@ -210,39 +204,41 @@ export default function Navbar() {
             className="md:hidden bg-background border-t"
           >
             <div className="container mx-auto px-4 py-4 space-y-4">
-              {navLinks.map((link) => (
-                <div key={link.title} className="py-2">
-                  {link.submenu ? (
-                    <details className="group">
-                      <summary className="flex cursor-pointer items-center justify-between font-medium">
+              {navLinks
+                .filter((navLink) => navLink.visible)
+                .map((link) => (
+                  <div key={link.title} className="py-2">
+                    {link.submenu ? (
+                      <details className="group">
+                        <summary className="flex cursor-pointer items-center justify-between font-medium">
+                          {link.title}
+                          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                        </summary>
+                        <ul className="mt-2 space-y-2 pl-4">
+                          {link.submenu.map((subItem) => (
+                            <li key={subItem.title}>
+                              <Link
+                                href={subItem.href}
+                                className="block py-2 text-sm text-muted-foreground hover:text-foreground"
+                                onClick={() => setIsOpen(false)}
+                              >
+                                {subItem.title}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="block py-2 font-medium hover:text-primary"
+                        onClick={() => setIsOpen(false)}
+                      >
                         {link.title}
-                        <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-                      </summary>
-                      <ul className="mt-2 space-y-2 pl-4">
-                        {link.submenu.map((subItem) => (
-                          <li key={subItem.title}>
-                            <Link
-                              href={subItem.href}
-                              className="block py-2 text-sm text-muted-foreground hover:text-foreground"
-                              onClick={() => setIsOpen(false)}
-                            >
-                              {subItem.title}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </details>
-                  ) : (
-                    <Link
-                      href={link.href}
-                      className="block py-2 font-medium hover:text-primary"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {link.title}
-                    </Link>
-                  )}
-                </div>
-              ))}
+                      </Link>
+                    )}
+                  </div>
+                ))}
               <div className="pt-4">
                 <Button className="w-full" asChild>
                   <Link href="/donate">Donate Now</Link>

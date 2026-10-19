@@ -26,7 +26,10 @@ export function AccreditationSection() {
   return (
     <section className="section-padding backdrop-blur-md bg-white/70 dark:bg-gray-800/70 px-6 rounded-lg border border-white/30 dark:border-gray-500/60">
       <p className="text-lg text-center text-gray-800 dark:text-gray-200 mt-1">
-        Accredited by: <span className="font-bold">ACTD-USA</span>
+        Accredited by:{' '}
+        <span className="font-bold">
+          American Council of Training and Development (ACTD-USA)
+        </span>
       </p>
       <div className="container-custom flex flex-col gap-8 items-center">
         <motion.div
@@ -54,7 +57,7 @@ export function AccreditationSection() {
               <div className="relative w-32 h-32">
                 <Image
                   src="/ACTD-2.png"
-                  alt="ACTD-USA Logo"
+                  alt="American Council of Training and Development (ACTD-USA) Logo"
                   fill
                   style={{ objectFit: 'contain' }}
                 />
@@ -64,7 +67,8 @@ export function AccreditationSection() {
         </motion.div>
 
         <p className="text-center text-gray-800 dark:text-gray-200">
-          iSMART is an ACTD-USA accredited professional training institution.
+          iSMART is a professional training institution accredited by the
+          American Council of Training and Development (ACTD-USA).
         </p>
         <Button
           size="lg"

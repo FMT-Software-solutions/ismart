@@ -4,28 +4,16 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import {
-  ArrowRight,
-  Calendar,
-  Users,
-  BookOpen,
-  Award,
-  Heart,
-  MapPin,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UpcomingEventsSection } from './UpcomingEventsSection';
 import { AccreditationSection } from './AccreditationSection';
+import { ImpactStatsSection } from './ImpactStatsSection';
 import { Event } from '@/app/admin/events/models/event-schema';
+import { programAreas } from '@/const/programs';
+import type { SiteStats } from '@/const/site-stats';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -48,9 +36,10 @@ const staggerContainer = {
 
 interface HomeContentProps {
   upcomingEvents: Event[];
+  stats: SiteStats;
 }
 
-export function HomeContent({ upcomingEvents }: HomeContentProps) {
+export function HomeContent({ upcomingEvents, stats }: HomeContentProps) {
   const [activeTab, setActiveTab] = useState('mission');
 
   return (
@@ -76,10 +65,9 @@ export function HomeContent({ upcomingEvents }: HomeContentProps) {
                 Training (iSMART) is an independent, premier NGO based in Ghana.
               </motion.p>
               <motion.div variants={fadeIn} className="flex flex-wrap gap-4">
-                {/* TODO: enable this back */}
-                {/* <Button size="lg" asChild>
-                  <Link href="/trainings/register">Sign Up for Training</Link>
-                </Button> */}
+                <Button size="lg" variant="secondary" asChild>
+                  <Link href="/programs">Explore Our Programs</Link>
+                </Button>
                 <Button
                   size="lg"
                   variant="outline"
@@ -91,7 +79,7 @@ export function HomeContent({ upcomingEvents }: HomeContentProps) {
               </motion.div>
             </motion.div>
           </div>
-          <div className="container-custom w-[95%] md:w-fit mx-10">
+          <div className="container-custom w-full min-w-0 max-w-xl">
             <AccreditationSection />
           </div>
         </div>
@@ -178,6 +166,9 @@ export function HomeContent({ upcomingEvents }: HomeContentProps) {
         </div>
       </section>
 
+      {/* Impact Stats Section */}
+      <ImpactStatsSection stats={stats} />
+
       {/* Key Areas Section */}
       <section className="section-padding bg-muted/30">
         <div className="container-custom">
@@ -207,54 +198,37 @@ export function HomeContent({ upcomingEvents }: HomeContentProps) {
             variants={staggerContainer}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {[
-              {
-                title: 'Sexuality Studies',
-                description:
-                  'Comprehensive research and education on human sexuality from a holistic perspective.',
-                icon: <BookOpen className="h-10 w-10 text-primary" />,
-                link: '/trainings/sexuality',
-              },
-              {
-                title: 'Marriage & Relationships',
-                description:
-                  'Building stronger, healthier relationships through evidence-based approaches.',
-                icon: <Heart className="h-10 w-10 text-accent" />,
-                link: '/trainings/marriage',
-              },
-              {
-                title: 'Family Life & Parenting',
-                description:
-                  'Supporting families with research-backed strategies for nurturing the next generation.',
-                icon: <Users className="h-10 w-10 text-secondary" />,
-                link: '/trainings/family',
-              },
-            ].map((item, index) => (
+            {programAreas.map((item) => (
               <motion.div
-                key={index}
+                key={item.title}
                 variants={fadeIn}
                 whileHover={{ y: -5 }}
                 className="card-hover"
               >
-                <Card>
+                <Card className="h-full">
                   <CardHeader>
-                    <div className="mb-4">{item.icon}</div>
+                    <div className="mb-4">
+                      <item.icon
+                        className={`h-10 w-10 ${item.iconClassName}`}
+                      />
+                    </div>
                     <CardTitle>{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">{item.description}</p>
                   </CardContent>
-                  {/* <CardFooter>
-                    <Button variant="ghost" asChild>
-                      <Link href={item.link}>
-                        Learn More <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardFooter> */}
                 </Card>
               </motion.div>
             ))}
           </motion.div>
+
+          <div className="mt-12 text-center">
+            <Button asChild>
+              <Link href="/programs">
+                Explore Our Programs <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 

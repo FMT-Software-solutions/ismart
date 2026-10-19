@@ -37,3 +37,6 @@ next-env.d.ts
 .cursor
 
 todo.txt
+
+# internal source documents (not for the repo)
+dev-docs/
