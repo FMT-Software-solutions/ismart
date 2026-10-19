@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/client';
 import { EventFormValues, EventTable } from '../models/event-schema';
 import { recordError } from '@/app/services/error-service';
+import { fetchAllRows } from '@/lib/supabase/fetch-all';
 
 // Create a new event
 export async function createEvent(
@@ -278,14 +279,120 @@ export async function incrementRegistrationCount(eventId: string) {
 
 export async function getEvents() {
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from('events')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const { data, error } = await fetchAllRows<EventTable>((from, to) =>
+    supabase
+      .from('events')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
 
   if (error) {
     return { events: null, error };
   }
 
   return { events: data, error: null };
+}
+
+// Duplicate an event (and its registration form) as a new draft so it can be
+// edited and reused. Registrations are never copied.
+export async function duplicateEvent(
+  id: string
+): Promise<{ success: boolean; error?: string; eventId?: string }> {
+  const supabase = createClient();
+  let newEventId: string | undefined;
+
+  try {
+    const { data: source, error: fetchError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !source) {
+      return {
+        success: false,
+        error: fetchError?.message || 'Event not found',
+      };
+    }
+
+    const {
+      id: _id,
+      created_at: _createdAt,
+      updated_at: _updatedAt,
+      form_schema_id: sourceFormSchemaId,
+      ...eventFields
+    } = source as EventTable;
+
+    const { data: created, error: insertError } = await supabase
+      .from('events')
+      .insert({
+        ...eventFields,
+        title: `${source.title} (Copy)`,
+        status: 'draft',
+        is_active: true,
+        registrations_count: 0,
+        form_schema_id: null,
+      })
+      .select('id')
+      .single();
+
+    if (insertError || !created) {
+      return {
+        success: false,
+        error: insertError?.message || 'Failed to duplicate event',
+      };
+    }
+    newEventId = created.id as string;
+
+    // Copy the registration form: prefer the linked schema, else the active one
+    let schemaQuery = supabase.from('form_schemas').select('*');
+    schemaQuery = sourceFormSchemaId
+      ? schemaQuery.eq('id', sourceFormSchemaId)
+      : schemaQuery
+          .eq('event_id', id)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+    const { data: schemas, error: schemaError } = await schemaQuery.limit(1);
+    if (schemaError) throw schemaError;
+
+    const schema = schemas?.[0];
+    if (schema) {
+      const { data: newSchema, error: newSchemaError } = await supabase
+        .from('form_schemas')
+        .insert({
+          title: schema.title,
+          description: schema.description,
+          fields: schema.fields,
+          event_id: newEventId,
+          is_active: true,
+        })
+        .select('id')
+        .single();
+
+      if (newSchemaError || !newSchema) {
+        throw newSchemaError || new Error('Failed to copy registration form');
+      }
+
+      const { error: linkError } = await supabase
+        .from('events')
+        .update({ form_schema_id: newSchema.id })
+        .eq('id', newEventId);
+      if (linkError) throw linkError;
+    }
+
+    return { success: true, eventId: newEventId };
+  } catch (error: any) {
+    console.error('Error duplicating event:', error);
+    // Roll back the half-created copy so admins don't get orphaned drafts
+    if (newEventId) {
+      await supabase.from('events').delete().eq('id', newEventId);
+    }
+    return {
+      success: false,
+      error: error?.message || 'An unexpected error occurred',
+    };
+  }
 }

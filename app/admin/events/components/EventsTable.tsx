@@ -5,9 +5,11 @@ import { useToast } from '@/components/ui/use-toast';
 import { Event } from '../models/event-schema';
 import {
   deleteEvent,
+  duplicateEvent,
   getEventById,
   updateEventStatus,
 } from '../services/event-service';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import {
@@ -31,6 +33,8 @@ import {
   LinkIcon,
   CalendarDays,
   CalendarClock,
+  Copy,
+  Loader2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -82,6 +86,14 @@ interface EventsTableProps {
 // Event status type
 type EventStatus = 'draft' | 'published' | 'cancelled' | 'archived';
 
+const STATUS_TABS: { value: 'all' | EventStatus; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'published', label: 'Published' },
+  { value: 'draft', label: 'Drafts' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'archived', label: 'Archived' },
+];
+
 export default function EventsTable({
   events,
   isLoading,
@@ -96,6 +108,8 @@ export default function EventsTable({
   const [viewLoading, setViewLoading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [statusTab, setStatusTab] = useState<'all' | EventStatus>('all');
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -181,6 +195,30 @@ export default function EventsTable({
     }
   };
 
+  // Duplicate an event as a draft and open it for editing
+  const handleDuplicateEvent = async (eventId: string) => {
+    setDuplicatingId(eventId);
+    try {
+      const result = await duplicateEvent(eventId);
+      if (!result.success || !result.eventId) {
+        throw new Error(result.error || 'Failed to duplicate event');
+      }
+      toast({
+        title: 'Event duplicated',
+        description: 'A draft copy was created. Review and update it below.',
+      });
+      router.push(`/admin/events/edit/${result.eventId}`);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to duplicate event',
+        variant: 'destructive',
+      });
+    } finally {
+      setDuplicatingId(null);
+    }
+  };
+
   // Confirm delete dialog
   const confirmDelete = (eventId: string) => {
     setEventToDelete(eventId);
@@ -219,12 +257,24 @@ export default function EventsTable({
     setViewEvent(null);
   };
 
-  // Filter events based on search term
+  // Count events per status for the tab badges
+  const statusCounts = localEvents.reduce<Record<string, number>>(
+    (acc, event) => {
+      acc.all += 1;
+      if (event.status) acc[event.status] = (acc[event.status] || 0) + 1;
+      return acc;
+    },
+    { all: 0 }
+  );
+
+  // Filter events based on the selected status tab and search term
+  const search = searchTerm.toLowerCase();
   const filteredEvents = localEvents.filter(
     (event) =>
-      event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.theme?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.location?.toLowerCase().includes(searchTerm.toLowerCase())
+      (statusTab === 'all' || event.status === statusTab) &&
+      (event.title?.toLowerCase().includes(search) ||
+        event.theme?.toLowerCase().includes(search) ||
+        event.location?.toLowerCase().includes(search))
   );
 
   // Format date for display
@@ -396,20 +446,35 @@ export default function EventsTable({
       <Button
         variant="ghost"
         size="icon"
+        title="View details"
         onClick={() => viewEventDetails(event.id)}
         disabled={viewLoading}
       >
         <Eye className="h-4 w-4" />
       </Button>
       <Link href={`/admin/events/edit/${event.id}`}>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" title="Edit event">
           <Edit className="h-4 w-4" />
         </Button>
       </Link>
+      <Button
+        variant="ghost"
+        size="icon"
+        title="Duplicate event"
+        onClick={() => handleDuplicateEvent(event.id)}
+        disabled={duplicatingId !== null}
+      >
+        {duplicatingId === event.id ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Copy className="h-4 w-4" />
+        )}
+      </Button>
 
       <Button
         variant="ghost"
         size="icon"
+        title="Delete event"
         onClick={() => confirmDelete(event.id)}
       >
         <Trash2 className="h-4 w-4 text-red-500" />
@@ -422,7 +487,7 @@ export default function EventsTable({
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle>All Events</CardTitle>
+            <CardTitle>Events</CardTitle>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -433,6 +498,22 @@ export default function EventsTable({
               />
             </div>
           </div>
+          <Tabs
+            value={statusTab}
+            onValueChange={(value) => setStatusTab(value as typeof statusTab)}
+            className="pt-2"
+          >
+            <TabsList className="h-auto flex-wrap justify-start">
+              {STATUS_TABS.map((tab) => (
+                <TabsTrigger key={tab.value} value={tab.value}>
+                  {tab.label}
+                  <span className="ml-2 rounded-full bg-muted-foreground/15 px-2 py-0.5 text-xs">
+                    {statusCounts[tab.value] || 0}
+                  </span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -459,7 +540,9 @@ export default function EventsTable({
               <p className="text-gray-500 max-w-md">
                 {searchTerm
                   ? 'No events match your search. Try different keywords.'
-                  : 'You have not created any events yet.'}
+                  : statusTab !== 'all'
+                    ? `There are no ${statusTab} events.`
+                    : 'You have not created any events yet.'}
               </p>
               {searchTerm && (
                 <Button
@@ -682,9 +765,7 @@ export default function EventsTable({
                             <span className="font-bold text-gray-700">
                               To:{' '}
                             </span>
-                            {viewEvent.end_date &&
-                              viewEvent.start_date !== viewEvent.end_date &&
-                              formatDate(viewEvent.end_date, true)}
+                            {formatDate(viewEvent.end_date, true)}
                           </p>
                         </div>
                       </div>

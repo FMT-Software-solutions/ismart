@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { createFormSubmission } from '@/app/admin/events/services/form-submission-service';
 import { incrementRegistrationCount } from '@/app/admin/events/services/event-service';
 import { sendConfirmationEmail } from '@/app/admin/events/services/email-service';
+import { getRegistrantDetails } from '../../utils/registrant';
 import { recordError } from '@/app/services/error-service';
 import {
   PaymentOptions,
@@ -57,34 +58,50 @@ export function PaymentForm({ event }: PaymentFormProps) {
   }, [event.id, router, toast]);
 
   const handlePaymentSuccess = async (reference: any) => {
+    // The customer has been charged at this point. Nothing below may tell
+    // them to "try again", or they could pay twice.
+    const paymentReference =
+      typeof reference === 'string' ? reference : reference?.reference || '';
+
     try {
       // Create form submission after successful payment
       await createFormSubmission({
         ...registrationData,
         status: 'approved', // Online payments are auto-approved
+        payment_method: 'online',
+        payment_details: {
+          reference: paymentReference,
+          amount: currentPrice,
+        },
         responses: {
           ...registrationData.responses,
           payment_method: 'online',
+          'Payment Reference': paymentReference,
         },
       });
-
-      // Wait for email to be sent
-      const result = await sendConfirmationEmail({
-        event,
-        recipientEmail: registrationData.responses['Email Address'],
-        recipientName: registrationData.responses['Full Name'],
+    } catch (error) {
+      console.error('Payment received but registration not saved:', error);
+      recordError(error as Error, {
+        component: 'PaymentForm',
+        errorType: 'PaidRegistrationNotSaved',
+        metadata: {
+          eventId: event.id,
+          eventName: event.title,
+          paymentReference,
+          registrationData: registrationData,
+        },
       });
-
-      if (!result.success) {
-        throw new Error('Failed to send confirmation email');
-      }
-
       toast({
-        title: 'Confirmation Email Sent',
-        description: 'Please check your email for event details.',
+        title: 'Payment received, registration incomplete',
+        description: `Your payment went through but we could not complete your registration. Please do not pay again. Contact us with your payment reference ${paymentReference} and we will sort it out.`,
+        variant: 'destructive',
       });
+      setIsProcessing(false);
+      return;
+    }
 
-      // Increment registration count
+    try {
+      // Follow-up steps are best effort: the registration is already saved
       const { error: countError } = await incrementRegistrationCount(event.id);
       if (countError) {
         recordError(countError as Error, {
@@ -96,9 +113,24 @@ export function PaymentForm({ event }: PaymentFormProps) {
             registrationData: registrationData,
           },
         });
-
         console.error('Error updating registration count:', countError);
-        throw new Error('Error updating registration count');
+      }
+
+      const registrant = getRegistrantDetails(registrationData.responses);
+      if (registrant.email) {
+        const result = await sendConfirmationEmail({
+          event,
+          recipientEmail: registrant.email,
+          recipientName: registrant.name,
+        }).catch(() => ({ success: false }));
+
+        if (!result.success) {
+          recordError(new Error('Confirmation email not sent'), {
+            component: 'PaymentForm',
+            errorType: 'ConfirmationEmailError',
+            metadata: { eventId: event.id, paymentReference },
+          });
+        }
       }
 
       // Clear the stored registration data
@@ -127,12 +159,10 @@ export function PaymentForm({ event }: PaymentFormProps) {
         },
       });
 
-      toast({
-        title: 'Payment Failed',
-        description:
-          'There was an error processing your payment. Please try again.',
-        variant: 'destructive',
-      });
+      // Registration and payment are already saved; just get them to the
+      // confirmation page rather than suggesting another payment.
+      sessionStorage.removeItem(`event_registration_${event.id}`);
+      router.push(`/events/${event.id}/confirmation`);
     } finally {
       setIsProcessing(false);
     }
@@ -172,7 +202,8 @@ export function PaymentForm({ event }: PaymentFormProps) {
         },
       });
 
-      // Increment registration count
+      // Increment registration count (best effort: the submission is saved,
+      // so failing here must not make the user submit again)
       const { error: countError } = await incrementRegistrationCount(event.id);
       if (countError) {
         recordError(countError as Error, {
@@ -186,7 +217,6 @@ export function PaymentForm({ event }: PaymentFormProps) {
         });
 
         console.error('Error updating registration count:', countError);
-        throw new Error('Error updating registration count');
       }
 
       // Clear the stored registration data
@@ -355,7 +385,7 @@ export function PaymentForm({ event }: PaymentFormProps) {
             ) : (
               <div className="space-y-4">
                 <PaystackPayment
-                  email={registrationData.responses['Email Address']}
+                  email={getRegistrantDetails(registrationData.responses).email}
                   amount={currentPrice}
                   metadata={{
                     name: registrationData.responses['Full Name'],

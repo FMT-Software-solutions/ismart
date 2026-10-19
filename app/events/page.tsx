@@ -9,7 +9,7 @@ export const metadata = {
 };
 
 export default async function EventsPage() {
-  const { events, error } = await getEvents();
+  const { events, error } = await getEvents({ status: 'published' });
 
   if (error) {
     return (
@@ -32,11 +32,7 @@ export default async function EventsPage() {
               in making a difference.
             </p>
           </div>
-          <EventsGrid
-            initialEvents={events.filter(
-              (event) => event.status === 'published'
-            )}
-          />
+          <EventsGrid initialEvents={events} />
         </div>
       </section>
     </main>

@@ -3,7 +3,10 @@ import { getEventById } from '../../services/event-service';
 import EditEventForm from './EditEventForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
-import { getEventFormSchema } from '../../services/form-schema-service';
+import {
+  getEventFormSchema,
+  getFormSchema,
+} from '../../services/form-schema-service';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -18,12 +21,18 @@ export default async function EditEventPage({
   const { id } = await params;
   // Fetch the event data on the server
   const { event, error } = await getEventById(id);
-  const formSchema = await getEventFormSchema(id);
 
   // If event doesn't exist or there was an error, show 404
   if (!event || error) {
     notFound();
   }
+
+  // Load the form the event is linked to; fall back to its latest active form
+  const formSchema = event.form_schema_id
+    ? await getFormSchema(event.form_schema_id).catch(() =>
+        getEventFormSchema(id)
+      )
+    : await getEventFormSchema(id);
 
   return (
     <div className="space-y-6">

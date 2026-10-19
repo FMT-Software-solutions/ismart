@@ -58,15 +58,18 @@ export async function getFormSchema(id: string) {
 export async function getEventFormSchema(eventId: string) {
   const supabase = createClient();
 
+  // An event can end up with several active schemas; use the newest one
+  // instead of failing (.single() errors on more than one row).
   const { data, error } = await supabase
     .from('form_schemas')
     .select('*')
     .eq('event_id', eventId)
     .eq('is_active', true)
-    .single();
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-  if (error && error.code !== 'PGRST116') {
-    // PGRST116 is "no rows returned"
+  if (error) {
     throw new Error(`Error fetching event form schema: ${error.message}`);
   }
 

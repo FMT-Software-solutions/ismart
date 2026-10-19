@@ -14,6 +14,10 @@ export default async function EventRegistrationPage({
     notFound();
   }
 
+  // Only published events accept registrations (drafts, cancelled and
+  // archived events are otherwise reachable by direct URL)
+  const isUnavailable = event.status !== 'published';
+
   // Check if registration is closed
   const now = new Date();
   const registrationDeadline = new Date(event.registration_deadline);
@@ -29,7 +33,18 @@ export default async function EventRegistrationPage({
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8">Register for {event.title}</h1>
 
-      {isRegistrationClosed ? (
+      {isUnavailable ? (
+        <div className="text-center py-8">
+          <h2 className="text-2xl font-semibold text-red-500 mb-4">
+            Registration Unavailable
+          </h2>
+          <p className="text-muted-foreground">
+            {event.status === 'cancelled'
+              ? 'This event has been cancelled.'
+              : 'Registration for this event is not open.'}
+          </p>
+        </div>
+      ) : isRegistrationClosed ? (
         <div className="text-center py-8">
           <h2 className="text-2xl font-semibold text-red-500 mb-4">
             Registration Closed

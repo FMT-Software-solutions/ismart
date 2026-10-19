@@ -4,7 +4,7 @@ import RegistrationFormRenderer from '@/app/admin/events/components/registration
 import { EventTable } from '@/app/admin/events/models/event-schema';
 import { incrementRegistrationCount } from '@/app/admin/events/services/event-service';
 import { createFormSubmission } from '@/app/admin/events/services/form-submission-service';
-import { getEventFormSchema } from '@/app/admin/events/services/form-schema-service';
+import { getFormSchema } from '@/app/admin/events/services/form-schema-service';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { FormSchema } from '@/app/admin/events/models/form-schema';
 import { sendConfirmationEmail } from '@/app/admin/events/services/email-service';
 import { recordError } from '@/app/services/error-service';
+import { getRegistrantDetails } from '../../utils/registrant';
 
 interface RegistrationFormProps {
   event: EventTable;
@@ -34,7 +35,8 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
           return;
         }
 
-        const fetchedSchema = await getEventFormSchema(event.id);
+        // Load the exact schema that submissions are recorded against
+        const fetchedSchema = await getFormSchema(event.form_schema_id);
         if (fetchedSchema) {
           // Transform the schema to match the FormSchema type
           const transformedSchema: FormSchema = {
@@ -104,21 +106,39 @@ export function RegistrationForm({ event }: RegistrationFormProps) {
           // Don't return here, as the registration itself was successful
         }
 
-        // Wait for email to be sent
-        const result = await sendConfirmationEmail({
-          event,
-          recipientEmail: submissionData.responses['Email Address'],
-          recipientName: submissionData.responses['Full Name'],
-        });
-
-        if (!result.success) {
-          throw new Error('Failed to send confirmation email');
+        // The registration is already saved: an email failure must not be
+        // reported as a failed registration (people would register twice).
+        const registrant = getRegistrantDetails(
+          submissionData.responses,
+          formSchema
+        );
+        let emailSent = false;
+        if (registrant.email) {
+          try {
+            const result = await sendConfirmationEmail({
+              event,
+              recipientEmail: registrant.email,
+              recipientName: registrant.name,
+            });
+            emailSent = result.success;
+          } catch (emailError) {
+            console.error('Error sending confirmation email:', emailError);
+          }
         }
 
-        // Show success message
+        if (!emailSent) {
+          recordError(new Error('Confirmation email not sent'), {
+            component: 'RegistrationForm',
+            errorType: 'ConfirmationEmailError',
+            metadata: { eventId: event.id },
+          });
+        }
+
         toast({
           title: 'Registration Successful',
-          description: 'You have been registered for the event.',
+          description: emailSent
+            ? 'You have been registered for the event. A confirmation email is on its way.'
+            : 'You have been registered for the event. We could not send a confirmation email, but your registration is saved.',
         });
 
         // Redirect or clear form as needed

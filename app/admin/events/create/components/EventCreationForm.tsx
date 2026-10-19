@@ -9,7 +9,10 @@ import EventDetailsForm from './EventDetailsForm';
 import PricingCapacityForm from './PricingCapacityForm';
 import RegistrationFormBuilder from './RegistrationFormBuilder';
 import EventPreview from './EventPreview';
-import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowLeft, ArrowRight, Save, Send } from 'lucide-react';
+import { eventFieldTabs, EventFormValues } from '../../models/event-schema';
+
+const STEPS = ['details', 'pricing', 'registration', 'preview'];
 
 export default function EventCreationForm() {
   const {
@@ -21,18 +24,24 @@ export default function EventCreationForm() {
     navigateBack,
   } = useEventCreation();
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent default form submission
+  const stepIndex = STEPS.indexOf(activeTab);
 
-    // If on the last tab, submit the form
-    if (activeTab === 'preview') {
-      handleSubmit();
-    } else {
-      // Otherwise navigate to the next tab
-      if (activeTab === 'details') setActiveTab('pricing');
-      else if (activeTab === 'pricing') setActiveTab('registration');
-      else if (activeTab === 'registration') setActiveTab('preview');
+  // Validate only the current step's fields before moving on
+  const goToNextStep = async () => {
+    const stepFields = Object.keys(eventFieldTabs).filter(
+      (key) => eventFieldTabs[key] === activeTab
+    ) as (keyof EventFormValues)[];
+
+    if (stepFields.length > 0) {
+      const valid = await form.trigger(stepFields, { shouldFocus: true });
+      if (!valid) return;
     }
+    setActiveTab(STEPS[stepIndex + 1]);
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent default form submission (e.g. Enter key)
+    if (activeTab !== 'preview') goToNextStep();
   };
 
   return (
@@ -119,9 +128,7 @@ export default function EventCreationForm() {
             variant="outline"
             onClick={(e) => {
               e.preventDefault();
-              if (activeTab === 'pricing') setActiveTab('details');
-              else if (activeTab === 'registration') setActiveTab('pricing');
-              else if (activeTab === 'preview') setActiveTab('registration');
+              if (stepIndex > 0) setActiveTab(STEPS[stepIndex - 1]);
             }}
             disabled={activeTab === 'details' || submitting}
           >
@@ -129,17 +136,40 @@ export default function EventCreationForm() {
             Previous Step
           </Button>
 
-          <Button type="submit" disabled={submitting}>
-            {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {activeTab === 'preview' ? (
-              'Create Event'
-            ) : (
-              <>
-                Next Step
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
+          {activeTab === 'preview' ? (
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={submitting}
+                onClick={() => handleSubmit('draft')}
+              >
+                {submitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save as Draft
+              </Button>
+              <Button
+                type="button"
+                disabled={submitting}
+                onClick={() => handleSubmit('publish')}
+              >
+                {submitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="mr-2 h-4 w-4" />
+                )}
+                Publish Event
+              </Button>
+            </div>
+          ) : (
+            <Button type="submit" disabled={submitting}>
+              Next Step
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
         </div>
       </form>
     </Form>

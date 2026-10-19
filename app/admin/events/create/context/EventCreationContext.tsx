@@ -5,7 +5,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { ReactNode, createContext, useContext, useState } from 'react';
 import { UseFormReturn, useForm } from 'react-hook-form';
-import { EventFormValues, eventFormSchema } from '../../models/event-schema';
+import {
+  EventFormValues,
+  eventFieldTabs,
+  eventFormSchema,
+} from '../../models/event-schema';
 import { FormField, FormFieldType } from '../../models/form-schema';
 import {
   createEvent,
@@ -27,8 +31,8 @@ interface EventCreationContextType {
   setActiveTab: (tab: string) => void;
   submitting: boolean;
 
-  // Form submission
-  handleSubmit: (isDraft?: boolean) => Promise<void>;
+  // Form submission. 'draft' / 'publish' set the status, 'keep' leaves it.
+  handleSubmit: (mode?: SubmitMode) => Promise<void>;
 
   // Registration form builder state
   formTitle: string;
@@ -50,7 +54,7 @@ interface EventCreationContextType {
   addField: (type: FormFieldType) => void;
   updateField: (id: string, updates: Partial<FormField>) => void;
   deleteField: (id: string) => void;
-  saveFormSchema: (eventId?: string) => Promise<string | null>;
+  saveFormSchema: (eventId: string) => Promise<string>;
 
   // Navigation
   navigateBack: () => void;
@@ -66,6 +70,8 @@ interface EventCreationContextType {
   // Reset fields state with new array
   resetFields: (newFields: FormField[]) => void;
 }
+
+export type SubmitMode = 'draft' | 'publish' | 'keep';
 
 const EventCreationContext = createContext<
   EventCreationContextType | undefined
@@ -120,113 +126,148 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
     router.push('/admin/events');
   };
 
-  // Form submission
-  const handleSubmit = async (isDraft = true) => {
-    try {
-      setSubmitting(true);
+  // Send the admin to the tab holding the first invalid field
+  const showValidationErrors = () => {
+    const errorKeys = Object.keys(form.formState.errors);
+    const firstField = Object.keys(eventFieldTabs).find((key) =>
+      errorKeys.includes(key)
+    );
+    if (firstField) setActiveTab(eventFieldTabs[firstField]);
 
-      // Validate form data
+    toast({
+      title: 'Please fix the highlighted fields',
+      description: `${errorKeys.length} field${
+        errorKeys.length === 1 ? ' needs' : 's need'
+      } attention before the event can be saved.`,
+      variant: 'destructive',
+    });
+  };
+
+  // Validate fields of the registration form before saving
+  const validateRegistrationFields = () => {
+    const unlabeled = fields.filter((field) => !field.label?.trim());
+    if (unlabeled.length > 0) {
+      return 'Every registration form field needs a label.';
+    }
+    const labels = fields.map((field) => field.label.trim().toLowerCase());
+    const duplicate = labels.find((label, i) => labels.indexOf(label) !== i);
+    if (duplicate) {
+      // Responses are stored by label, so duplicates overwrite each other
+      return `Two registration fields are both labelled "${duplicate}". Labels must be unique.`;
+    }
+    const emptySelect = fields.find(
+      (field) =>
+        field.type === 'select' &&
+        !(field.options || []).some((option) => option.trim())
+    );
+    if (emptySelect) {
+      return `The dropdown "${emptySelect.label}" needs at least one option.`;
+    }
+    return null;
+  };
+
+  // Form submission (shared by the create and edit screens)
+  const handleSubmit = async (mode: SubmitMode = 'draft') => {
+    if (submitting) return;
+    setSubmitting(true);
+    let redirecting = false;
+
+    try {
       const isValid = await form.trigger();
       if (!isValid) {
+        showValidationErrors();
+        return;
+      }
+
+      const fieldsError = validateRegistrationFields();
+      if (fieldsError) {
+        setActiveTab('registration');
         toast({
-          title: 'Validation Error',
-          description: 'Please check the form for errors',
+          title: 'Registration form needs attention',
+          description: fieldsError,
           variant: 'destructive',
         });
-        setSubmitting(false);
         return;
       }
 
       const formData = form.getValues();
+      const eventData = {
+        ...formData,
+        description: richTextDescription || formData.description,
+        // Drop empty gallery rows the admin added but never filled
+        galleryImages:
+          formData.galleryImages?.filter((url) => url.trim() !== '') || [],
+        hasEarlyBird: formData.hasEarlyBird && !formData.isFree,
+      };
 
-      // Get the actual rich text content
-      const richTextContent =
-        document.querySelector('.ProseMirror')?.innerHTML ||
-        richTextDescription;
-
-      // Filter out empty gallery image URLs
-      const galleryImages =
-        formData.galleryImages?.filter((url) => url.trim() !== '') || [];
-
-      // First create or update the event
-      let result;
-      if (eventId) {
-        // Update existing event
-        result = await updateEvent(eventId, {
-          ...formData,
-          description: richTextContent,
-          galleryImages,
-          // Don't include formSchemaId yet as we'll update it after saving the form schema
-        });
+      // Create the event once; on retry (or when editing) update it instead,
+      // so a failure later in this flow never produces duplicate events.
+      let currentEventId = eventId;
+      if (currentEventId) {
+        const result = await updateEvent(currentEventId, eventData);
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to save event');
+        }
       } else {
-        // Create new event
-        result = await createEvent({
-          ...formData,
-          description: richTextContent,
-          galleryImages,
-          // Don't include formSchemaId yet as we'll update it after saving the form schema
-        });
+        const result = await createEvent(eventData);
+        if (!result.success || !result.eventId) {
+          throw new Error(result.error || 'Failed to save event');
+        }
+        currentEventId = result.eventId;
+        setEventId(currentEventId);
       }
 
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to save event');
-      }
-
-      // Set the event ID if it was a new event
-      const newEventId = (result as any).eventId;
-
-      // Now save the form schema if there are fields, using the event ID
-      let savedFormSchemaId = formSchemaId;
+      // Save the registration form and make sure the event points at it
       if (fields.length > 0) {
-        // Pass the actual event ID to the form schema
-        savedFormSchemaId = await saveFormSchema(newEventId);
-
-        if (!savedFormSchemaId) {
-          throw new Error('Failed to save form schema');
+        let savedFormSchemaId: string;
+        try {
+          savedFormSchemaId = await saveFormSchema(currentEventId);
+        } catch (error: any) {
+          throw new Error(
+            `The event was saved, but its registration form was not: ${error.message}. Please try saving again.`
+          );
         }
 
-        // Update the event with the form schema ID
-        if (savedFormSchemaId) {
-          const updateResult = await updateEvent(newEventId, {
+        if (savedFormSchemaId !== formData.formSchemaId) {
+          const linkResult = await updateEvent(currentEventId, {
             formSchemaId: savedFormSchemaId,
           });
-
-          if (!updateResult.success) {
-            toast({
-              title: 'Warning',
-              description: 'Event saved but failed to link registration form',
-              variant: 'default',
-            });
+          if (!linkResult.success) {
+            throw new Error(
+              'The event was saved, but linking its registration form failed. Please try saving again.'
+            );
           }
+          form.setValue('formSchemaId', savedFormSchemaId);
         }
       }
 
-      // Publish event if not draft
-      if (!isDraft && newEventId) {
-        const publishResult = await publishEvent(newEventId);
+      if (mode === 'publish') {
+        const publishResult = await publishEvent(currentEventId);
         if (!publishResult.success) {
           toast({
-            title: 'Warning',
-            description: 'Event saved but failed to publish',
-            variant: 'default',
+            title: 'Saved, but not published',
+            description:
+              publishResult.error ||
+              'The event was saved as a draft. Publish it from the events list.',
+            variant: 'destructive',
           });
         }
       }
 
       toast({
         title: 'Success',
-        description: isDraft
-          ? 'Event saved as draft'
-          : 'Event published successfully',
+        description:
+          mode === 'publish'
+            ? 'Event published successfully'
+            : mode === 'draft'
+              ? 'Event saved as draft'
+              : 'Event updated successfully',
       });
 
-      // Redirect after successful save
       if (redirectAfterSubmit) {
+        redirecting = true;
         router.push('/admin/events');
         router.refresh();
-      } else {
-        // If we're not redirecting, reset submitting state
-        setSubmitting(false);
       }
     } catch (error: any) {
       console.error('Error submitting event:', error);
@@ -235,95 +276,36 @@ export function EventCreationProvider({ children }: { children: ReactNode }) {
         description: error.message || 'Failed to save event',
         variant: 'destructive',
       });
-      setSubmitting(false);
+    } finally {
+      // Keep the buttons disabled while navigating away
+      if (!redirecting) setSubmitting(false);
     }
   };
 
-  // Handler to save form schema
-  const saveFormSchema = async (
-    eventIdToSave?: string
-  ): Promise<string | null> => {
+  // Create or update the registration form schema. Throws on failure.
+  const saveFormSchema = async (eventIdToSave: string): Promise<string> => {
+    setIsFormLoading(true);
     try {
-      setIsFormLoading(true);
+      const payload = {
+        title: formTitle.trim() || 'Event Registration Form',
+        description: formDescription,
+        fields,
+      };
 
       if (formSchemaId) {
-        // Update existing schema
-        try {
-          const result = await updateFormSchema(formSchemaId, {
-            title: formTitle,
-            description: formDescription,
-            fields,
-          });
-
-          if (result && result.id) {
-            setIsFormLoading(false);
-            toast({
-              title: 'Success',
-              description: 'Form schema updated successfully',
-            });
-            return result.id;
-          } else {
-            throw new Error('Invalid response from updateFormSchema');
-          }
-        } catch (error: any) {
-          console.error('Error updating form schema:', error);
-          toast({
-            title: 'Error',
-            description: error.message || 'Failed to update form schema',
-            variant: 'destructive',
-          });
-          setIsFormLoading(false);
-          return null;
-        }
-      } else {
-        // Create new schema
-        try {
-          if (eventIdToSave) {
-            const result = await createFormSchema({
-              title: formTitle,
-              description: formDescription,
-              fields,
-              event_id: eventIdToSave,
-              is_active: true,
-            });
-
-            if (result && result.id) {
-              const newSchemaId = result.id;
-              setFormSchemaId(newSchemaId);
-              form.setValue('formSchemaId', newSchemaId);
-
-              toast({
-                title: 'Success',
-                description: 'Form schema created successfully',
-              });
-
-              setIsFormLoading(false);
-              return newSchemaId;
-            } else {
-              throw new Error('Invalid response from createFormSchema');
-            }
-          }
-          return null;
-        } catch (error: any) {
-          console.error('Error creating form schema:', error);
-          toast({
-            title: 'Error',
-            description: error.message || 'Failed to create form schema',
-            variant: 'destructive',
-          });
-          setIsFormLoading(false);
-          return null;
-        }
+        const result = await updateFormSchema(formSchemaId, payload);
+        return result.id;
       }
-    } catch (error: any) {
-      console.error('Error saving form schema:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to save form schema',
-        variant: 'destructive',
+
+      const result = await createFormSchema({
+        ...payload,
+        event_id: eventIdToSave,
+        is_active: true,
       });
+      setFormSchemaId(result.id);
+      return result.id;
+    } finally {
       setIsFormLoading(false);
-      return null;
     }
   };
 

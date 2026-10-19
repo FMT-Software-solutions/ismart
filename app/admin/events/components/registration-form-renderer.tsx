@@ -49,6 +49,9 @@ export default function RegistrationFormRenderer({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [visibleFields, setVisibleFields] = useState<string[]>([]);
+  // File fields that currently have uploads in progress
+  const [uploadingFields, setUploadingFields] = useState<string[]>([]);
+  const isUploading = uploadingFields.length > 0;
 
   // Create a mapping between field IDs and labels
   const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
@@ -147,6 +150,34 @@ export default function RegistrationFormRenderer({
     }
   };
 
+  // File uploads finish asynchronously, so update from the latest state
+  // instead of a stale closure (otherwise a new upload replaces old ones).
+  const updateFileField = (
+    field: FormField,
+    update: (current: string[]) => string[]
+  ) => {
+    const fieldId = `field_${field.id}`;
+    setFormData((prev) => ({
+      ...prev,
+      [fieldId]: update(Array.isArray(prev[fieldId]) ? prev[fieldId] : []),
+    }));
+    setErrors((prev) => {
+      if (!prev[fieldId]) return prev;
+      const next = { ...prev };
+      delete next[fieldId];
+      return next;
+    });
+  };
+
+  const setFieldUploading = (fieldId: string, uploading: boolean) => {
+    setUploadingFields((prev) => {
+      if (uploading === prev.includes(fieldId)) return prev;
+      return uploading
+        ? [...prev, fieldId]
+        : prev.filter((id) => id !== fieldId);
+    });
+  };
+
   const validateForm = () => {
     if (!formSchema) return false;
 
@@ -162,7 +193,11 @@ export default function RegistrationFormRenderer({
       const value = formData[fieldId];
 
       if (field.required) {
-        if (!value || (typeof value === 'string' && value.trim() === '') || (Array.isArray(value) && (!value || value.length === 0))) {
+        if (
+          !value ||
+          (typeof value === 'string' && value.trim() === '') ||
+          (Array.isArray(value) && (!value || value.length === 0))
+        ) {
           newErrors[fieldId] = 'This field is required';
           isValid = false;
         }
@@ -192,7 +227,23 @@ export default function RegistrationFormRenderer({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    if (submitting) return;
+    if (isUploading) {
+      toast({
+        title: 'Upload in progress',
+        description: 'Please wait for your files to finish uploading.',
+      });
+      return;
+    }
+    if (!validateForm()) {
+      // Bring the first problem into view
+      requestAnimationFrame(() =>
+        document
+          .querySelector('[data-field-error="true"]')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      );
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -264,17 +315,24 @@ export default function RegistrationFormRenderer({
             maxSize={field.maxSize}
             acceptedFileTypes={field.acceptedFileTypes}
             value={Array.isArray(value) ? value : []}
-            onUploadComplete={(urls) => handleChange(field, urls)}
-            onDelete={(url) => {
-              const currentUrls = Array.isArray(value) ? value : [];
-              handleChange(
-                field,
-                currentUrls.filter((u) => u !== url)
-              );
-            }}
-            disabled={submitting}
+            onUploadComplete={(urls) =>
+              updateFileField(field, (current) => [...current, ...urls])
+            }
+            onDelete={(url) =>
+              updateFileField(field, (current) =>
+                current.filter((u) => u !== url)
+              )
+            }
+            onUploadingChange={(uploading) =>
+              setFieldUploading(fieldId, uploading)
+            }
+            disabled={submitting || isPreview}
           />
-          {error && <p className="text-xs text-red-500">{error}</p>}
+          {error && (
+            <p className="text-xs text-red-500" data-field-error="true">
+              {error}
+            </p>
+          )}
         </div>
       );
     }
@@ -358,6 +416,12 @@ export default function RegistrationFormRenderer({
             </label>
           </div>
         )}
+
+        {error && (
+          <p className="text-xs text-red-500" data-field-error="true">
+            {error}
+          </p>
+        )}
       </div>
     );
   };
@@ -367,8 +431,12 @@ export default function RegistrationFormRenderer({
       {formSchema.fields.map((field) => renderField(field))}
       {!isPreview && (
         <div className="flex justify-end pt-6">
-          <Button type="submit" disabled={submitting}>
-            {submitting ? 'Submitting...' : 'Submit Registration'}
+          <Button type="submit" disabled={submitting || isUploading}>
+            {submitting
+              ? 'Submitting...'
+              : isUploading
+                ? 'Uploading files...'
+                : 'Submit Registration'}
           </Button>
         </div>
       )}

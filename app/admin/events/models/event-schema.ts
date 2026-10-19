@@ -1,11 +1,54 @@
 import * as z from 'zod';
 
+// Optional URL inputs submit '' when left blank, which z.string().url() rejects
+const optionalUrl = (message: string) =>
+  z
+    .string()
+    .trim()
+    .optional()
+    .refine((val) => !val || /^https?:\/\/\S+$/i.test(val), { message });
+
+// The description is rich text HTML: measure the visible text, not the markup
+const stripHtml = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+// Which create/edit tab each field lives on, so errors can be surfaced
+export const eventFieldTabs: Record<string, 'details' | 'pricing'> = {
+  bannerImageUrl: 'details',
+  galleryImages: 'details',
+  videoUrl: 'details',
+  title: 'details',
+  theme: 'details',
+  description: 'details',
+  startDate: 'details',
+  endDate: 'details',
+  registrationDeadline: 'details',
+  location: 'details',
+  eventType: 'details',
+  eventLink: 'details',
+  whatsappLink: 'details',
+  price: 'pricing',
+  hasEarlyBird: 'pricing',
+  earlyBirdPrice: 'pricing',
+  earlyBirdDeadline: 'pricing',
+  capacity: 'pricing',
+  isFree: 'pricing',
+  requireApproval: 'pricing',
+};
+
 // Form schema for event creation
 export const eventFormSchema = z
   .object({
-    bannerImageUrl: z.string().url({
-      message: 'Please enter a valid URL for the banner image.',
-    }),
+    bannerImageUrl: z
+      .string({ required_error: 'A banner image is required.' })
+      .trim()
+      .url({
+        message: 'Please enter a valid URL for the banner image.',
+      }),
     galleryImages: z
       .array(
         z.string().url({
@@ -16,35 +59,29 @@ export const eventFormSchema = z
         message: 'You can add a maximum of 10 gallery images.',
       })
       .optional(),
-    videoUrl: z
-      .string()
-      .optional()
-      .refine((val) => !val || /^https?:\/\/.*/.test(val), {
-        message: 'Please enter a valid URL for the video.',
-      }),
-    title: z.string().min(5, {
+    videoUrl: optionalUrl('Please enter a valid URL for the video.'),
+    title: z.string().trim().min(5, {
       message: 'Event title must be at least 5 characters.',
     }),
     theme: z.string().optional(),
-    description: z.string().min(20, {
-      message: 'Description must be at least 20 characters.',
-    }),
+    description: z
+      .string({ required_error: 'Description is required.' })
+      .refine((val) => stripHtml(val).length >= 20, {
+        message: 'Description must be at least 20 characters.',
+      }),
     startDate: z.date({
       required_error: 'Start date is required.',
     }),
     endDate: z.date({
       required_error: 'End date is required.',
     }),
-    location: z.string().min(3, {
+    location: z.string().trim().min(3, {
       message: 'Location must be at least 3 characters.',
     }),
     eventType: z.enum(['physical', 'online', 'hybrid'], {
       required_error: 'Event type is required.',
     }),
-    eventLink: z
-      .string()
-      .url({ message: 'Please enter a valid URL for the event link.' })
-      .optional(),
+    eventLink: optionalUrl('Please enter a valid URL for the event link.'),
     price: z.number().min(0, {
       message: 'Price cannot be negative.',
     }),
@@ -69,15 +106,52 @@ export const eventFormSchema = z
     requireApproval: z.boolean().default(false),
     additionalInfo: z.string().optional(),
     formSchemaId: z.string().optional(),
-    whatsappLink: z.string().optional(),
+    whatsappLink: optionalUrl('Please enter a valid WhatsApp group link.'),
   })
   .superRefine((data, ctx) => {
+    const issue = (path: string, message: string) =>
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message, path: [path] });
+
     if (data.startDate && data.endDate && data.startDate > data.endDate) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'End date must be after start date.',
-        path: ['endDate'],
-      });
+      issue('endDate', 'End date must be after start date.');
+    }
+
+    if (
+      data.registrationDeadline &&
+      data.endDate &&
+      data.registrationDeadline > data.endDate
+    ) {
+      issue(
+        'registrationDeadline',
+        'Registration deadline cannot be after the event ends.'
+      );
+    }
+
+    if (!data.isFree && !(data.price > 0)) {
+      issue('price', 'Enter a ticket price, or mark the event as free.');
+    }
+
+    if (data.hasEarlyBird && !data.isFree) {
+      if (data.earlyBirdPrice === undefined || data.earlyBirdPrice <= 0) {
+        issue('earlyBirdPrice', 'Enter the early bird price.');
+      } else if (data.earlyBirdPrice >= data.price) {
+        issue(
+          'earlyBirdPrice',
+          'Early bird price should be lower than the regular price.'
+        );
+      }
+
+      if (!data.earlyBirdDeadline) {
+        issue('earlyBirdDeadline', 'Select when early bird pricing ends.');
+      } else if (
+        data.registrationDeadline &&
+        data.earlyBirdDeadline > data.registrationDeadline
+      ) {
+        issue(
+          'earlyBirdDeadline',
+          'Early bird deadline cannot be after the registration deadline.'
+        );
+      }
     }
   });
 

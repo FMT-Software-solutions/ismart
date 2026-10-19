@@ -5,6 +5,7 @@ import {
 } from '../models/form-submission-schema';
 import * as XLSX from 'xlsx';
 import { recordError } from '@/app/services/error-service';
+import { fetchAllRows } from '@/lib/supabase/fetch-all';
 
 export async function createFormSubmission(
   submission: Omit<FormSubmission, 'id' | 'created_at' | 'updated_at'>
@@ -103,11 +104,16 @@ export async function getEventFormSubmissions(eventId: string) {
   const supabase = createClient();
 
   // Get submissions for this event
-  const { data: submissions, error: submissionsError } = await supabase
-    .from('form_submissions')
-    .select('*')
-    .eq('event_id', eventId)
-    .order('created_at', { ascending: false });
+  const { data: submissions, error: submissionsError } =
+    await fetchAllRows<any>((from, to) =>
+      supabase
+        .from('form_submissions')
+        .select('*')
+        .eq('event_id', eventId)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, to)
+    );
 
   if (submissionsError) {
     throw new Error(
@@ -238,18 +244,23 @@ export async function getUserFormSubmissions(userId: string) {
 export async function getFormSubmissions(eventId?: string) {
   const supabase = createClient();
 
-  let query = supabase
-    .from('form_submissions')
-    .select(
-      '*, event: event_id(id, title, start_date, end_date, status, theme, event_type, location, event_link, whatsapp_group_url, require_approval)'
-    )
-    .order('created_at', { ascending: false });
+  const { data: submissions, error: submissionsError } =
+    await fetchAllRows<any>((from, to) => {
+      let query = supabase
+        .from('form_submissions')
+        .select(
+          '*, event: event_id(id, title, start_date, end_date, status, theme, event_type, location, event_link, whatsapp_group_url, require_approval)'
+        );
 
-  if (eventId) {
-    query = query.eq('event_id', eventId);
-  }
+      if (eventId) {
+        query = query.eq('event_id', eventId);
+      }
 
-  const { data: submissions, error: submissionsError } = await query;
+      return query
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, to);
+    });
 
   if (submissionsError) {
     return { submissions: null, error: submissionsError.message };

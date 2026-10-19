@@ -424,7 +424,10 @@ export default function RegistrationFormBuilder({
                               }
                               onChange={(e) =>
                                 updateField(activeField, {
-                                  maxFiles: parseInt(e.target.value),
+                                  maxFiles: Math.min(
+                                    20,
+                                    Math.max(1, parseInt(e.target.value) || 1)
+                                  ),
                                 })
                               }
                             />
@@ -444,7 +447,12 @@ export default function RegistrationFormBuilder({
                               onChange={(e) =>
                                 updateField(activeField, {
                                   maxSize:
-                                    parseInt(e.target.value) * 1024 * 1024,
+                                    Math.min(
+                                      5,
+                                      Math.max(1, parseInt(e.target.value) || 1)
+                                    ) *
+                                    1024 *
+                                    1024,
                                 })
                               }
                             />
@@ -471,7 +479,7 @@ export default function RegistrationFormBuilder({
                               }}
                             >
                               <SelectTrigger>
-                                <SelectValue placeholder="Select file types" />
+                                <SelectValue placeholder="Any file type (click to restrict)" />
                               </SelectTrigger>
                               <SelectContent>
                                 {FILE_TYPE_OPTIONS.map((option) => (

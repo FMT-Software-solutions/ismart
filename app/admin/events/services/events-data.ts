@@ -1,23 +1,28 @@
-import { Event } from '../models/event-schema';
+import { Event, EventStatus } from '../models/event-schema';
 import { createClient } from '@/lib/supabase/client';
+import { fetchAllRows } from '@/lib/supabase/fetch-all';
 
 /**
- * Fetches all events from Supabase
+ * Fetches all events from Supabase (paged past the 1000 row API limit)
  * This function is designed to be called from server components
  */
-export async function getEvents(): Promise<{
+export async function getEvents(
+  options: { status?: EventStatus } = {}
+): Promise<{
   events: Event[];
   error: string | null;
 }> {
   try {
     const supabase = createClient();
-    const now = new Date().toISOString();
 
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      // .gt('end_date', now) // Only get events that haven't ended yet
-      .order('created_at', { ascending: false });
+    const { data, error } = await fetchAllRows<any>((from, to) => {
+      let query = supabase.from('events').select('*');
+      if (options.status) query = query.eq('status', options.status);
+      return query
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, to);
+    });
 
     if (error) {
       throw error;
@@ -34,6 +39,8 @@ export async function getEvents(): Promise<{
       endDate: event.end_date,
       location: event.location,
       eventType: event.event_type,
+      galleryImages: event.gallery_images,
+      videoUrl: event.video_url,
       price: event.price,
       hasEarlyBird: event.has_early_bird,
       earlyBirdPrice: event.early_bird_price,

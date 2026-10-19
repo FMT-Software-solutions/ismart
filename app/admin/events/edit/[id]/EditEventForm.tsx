@@ -11,9 +11,8 @@ import {
 import EventDetailsForm from '../../create/components/EventDetailsForm';
 import PricingCapacityForm from '../../create/components/PricingCapacityForm';
 import RegistrationFormBuilder from '../../create/components/RegistrationFormBuilder';
-import { EventTable, FormField } from '../../models/event-schema';
+import { EventTable } from '../../models/event-schema';
 import { useToast } from '@/components/ui/use-toast';
-import { updateEvent } from '../../services/event-service';
 import { useRouter } from 'next/navigation';
 import { Form } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
@@ -31,7 +30,7 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
     form,
     activeTab,
     submitting,
-    formSchemaId,
+    handleSubmit,
     setRichTextDescription,
     setActiveTab,
     setEventId,
@@ -40,7 +39,6 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
     setFormDescription,
     resetFields,
     setFormBuilderActiveTab,
-    saveFormSchema,
   } = useEventCreation();
   const { toast } = useToast();
   const router = useRouter();
@@ -69,16 +67,16 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
           location: event.location,
           eventType: event.event_type,
           eventLink: event.event_link || '',
-          price: event.price,
-          hasEarlyBird: event.has_early_bird,
+          price: event.price ?? 0,
+          hasEarlyBird: event.has_early_bird ?? false,
           earlyBirdPrice: event.early_bird_price || undefined,
           earlyBirdDeadline: event.early_bird_deadline
             ? new Date(event.early_bird_deadline)
             : undefined,
           registrationDeadline: new Date(event.registration_deadline),
           capacity: event.capacity || undefined,
-          isFree: event.is_free,
-          requireApproval: event.require_approval,
+          isFree: event.is_free ?? false,
+          requireApproval: event.require_approval ?? false,
           additionalInfo: event.additional_info || '',
           formSchemaId: event.form_schema_id || '',
           galleryImages: event.gallery_images || [],
@@ -126,58 +124,8 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
     loadEventData();
   }, [event.id]); // Depend only on event ID to prevent unnecessary re-renders
 
-  // Handle form submission for update
-  const handleUpdateEvent = async () => {
-    try {
-      // Validate form data
-      const isValid = await form.trigger();
-      if (!isValid) {
-        toast({
-          title: 'Validation Error',
-          description: 'Please check the form for errors',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      const formData = form.getValues();
-
-      // Get the actual rich text content
-      const richTextContent =
-        document.querySelector('.ProseMirror')?.innerHTML ||
-        formData.description;
-
-      // Update the event
-      const result = await updateEvent(event.id, {
-        ...formData,
-        description: richTextContent,
-      });
-
-      if (formSchemaId) {
-        await saveFormSchema();
-      }
-
-      if (result.success) {
-        toast({
-          title: 'Success',
-          description: 'Event updated successfully',
-        });
-
-        // Redirect to events list
-        router.push('/admin/events');
-        router.refresh();
-      } else {
-        throw new Error(result.error || 'Failed to update event');
-      }
-    } catch (error: any) {
-      console.error('Error updating event:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update event',
-        variant: 'destructive',
-      });
-    }
-  };
+  // Status is left unchanged when editing; publish from the events list
+  const handleUpdateEvent = () => handleSubmit('keep');
 
   if (loading) {
     return (
@@ -223,11 +171,13 @@ function EditEventFormContent({ event, formSchema }: EventWithSchema) {
           <Button
             variant="outline"
             onClick={() => router.push('/admin/events')}
+            disabled={submitting}
           >
             Cancel
           </Button>
           <Button onClick={handleUpdateEvent} disabled={submitting}>
-            {submitting ? 'Updating...' : 'Update Event'}
+            {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {submitting ? 'Saving...' : 'Update Event'}
           </Button>
         </div>
       </div>
