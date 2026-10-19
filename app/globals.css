@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* dark: utilities follow the theme toggle (.dark class from next-themes),
+   not the OS setting. Tailwind v4 defaults to prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
