@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClientSupabaseClient } from '@/lib/supabase/client';
+import { NewPasswordFields } from '@/components/auth/new-password-fields';
+import { newPasswordSchema } from '@/lib/auth/password-policy';
 
 interface ResetPasswordFormProps {
   userId: string;
@@ -22,13 +23,9 @@ export default function ResetPasswordForm({ userId }: ResetPasswordFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
+    const parsed = newPasswordSchema.safeParse({ password, confirmPassword });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message || 'Invalid password');
       return;
     }
 
@@ -66,14 +63,14 @@ export default function ResetPasswordForm({ userId }: ResetPasswordFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-md bg-gray-100 dark:bg-gray-950">
+    <Card className="w-full max-w-md shadow-lg">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-center">
           Set New Password
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-center text-gray-600 mb-6">
+        <p className="text-center text-muted-foreground mb-6">
           Please set a new password for your account
         </p>
 
@@ -84,38 +81,13 @@ export default function ResetPasswordForm({ userId }: ResetPasswordFormProps) {
             </div>
           )}
 
-          <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium">
-              New Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-              className="w-full"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium"
-            >
-              Confirm Password
-            </label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-              className="w-full"
-            />
-          </div>
+          <NewPasswordFields
+            password={password}
+            confirmPassword={confirmPassword}
+            onPasswordChange={setPassword}
+            onConfirmPasswordChange={setConfirmPassword}
+            disabled={loading}
+          />
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Updating...' : 'Update Password'}

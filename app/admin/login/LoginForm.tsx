@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,7 +59,7 @@ export default function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md bg-gray-100 dark:bg-gray-950">
+    <Card className="w-full max-w-md shadow-lg">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-center">
           Admin Login
@@ -79,6 +80,7 @@ export default function LoginForm() {
             <Input
               id="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -88,12 +90,21 @@ export default function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium">
-              Password
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="block text-sm font-medium">
+                Password
+              </label>
+              <Link
+                href="/admin/forgot-password"
+                className="text-sm text-primary hover:underline dark:text-blue-300"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

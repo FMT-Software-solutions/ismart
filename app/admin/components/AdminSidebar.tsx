@@ -71,6 +71,7 @@ const AdminSidebar = () => {
 
   const isAuthPage =
     pathname.includes('/admin/login') ||
+    pathname.includes('/admin/forgot-password') ||
     pathname.includes('/admin/reset-password');
 
   if (isAuthPage) {

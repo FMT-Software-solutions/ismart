@@ -29,9 +29,27 @@ export default async function proxy(request: NextRequest) {
     }
   );
 
-  // Check if we're on an admin page (excluding login page)
-  const adminPathRegex = /^\/admin(?!\/login)/;
-  if (adminPathRegex.test(request.nextUrl.pathname)) {
+  const { pathname } = request.nextUrl;
+
+  // Admin API routes use the service role key, so they must never be
+  // reachable without a signed-in user.
+  if (pathname.startsWith('/api/admin')) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return supabaseResponse;
+  }
+
+  // Admin pages that must work while signed out
+  const isPublicAdminPage =
+    pathname === '/admin/login' ||
+    pathname === '/admin/forgot-password' ||
+    pathname.startsWith('/admin/forgot-password/');
+
+  if (pathname.startsWith('/admin') && !isPublicAdminPage) {
     try {
       const {
         data: { user },
